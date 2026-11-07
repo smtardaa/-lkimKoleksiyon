@@ -94,6 +94,10 @@ görselin gerçek dosyaya karşılık gelmesi, alt yolu atlayan adres olmaması,
 robots.txt, sitemap kapsamı, sunucu çağrısı ve gizli değer kalmaması, teklif fiyatının sızmaması, 1 GB sınırı.
 `SITE_URL` ve `BASE_PATH`, derlemedeki değerlerle aynı olmalıdır.
 
+Gizli değer kuralları `scripts/secret-scan.mjs` içindedir. GitHub Pages adresi depo sahibinin kullanıcı adını içerdiği için
+yalnızca bu adresin tam hali kişisel bilgi taramasından çıkarılır; kullanıcı adı başka bir bağlamda geçerse denetim başarısız olur.
+Yerelde gerçek yayın değerleriyle denemek için `SITE_URL=https://smtardaa.github.io` ve `BASE_PATH=/-lkimKoleksiyon` kullanın.
+
 Site tek dillidir (Türkçe); dil değiştirici ve `hreflang` yoktur.
 
 ## Yapı

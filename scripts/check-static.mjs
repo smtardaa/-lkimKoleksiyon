@@ -7,6 +7,7 @@
  */
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
+import { findSecrets } from './secret-scan.mjs';
 
 const DIST = join(process.cwd(), 'dist');
 const BASE = (process.env.BASE_PATH ?? '').trim().replace(/\/+$/, '');
@@ -246,15 +247,6 @@ if (!/User-agent: \*/.test(robotsTxt) || !/Disallow: \/\s*$/m.test(robotsTxt)) f
 // Sunucu çağrısı, alt yol ve gizli değer taraması
 // ---------------------------------------------------------------------------
 const textFiles = files.filter((f) => /\.(html|js|mjs|css|json|xml|txt|map)$/.test(f));
-const SECRET = [
-  [/shpat_[a-z0-9]+/i, 'Shopify Admin token'],
-  [/\bre_[A-Za-z0-9]{16,}/, 'Resend anahtarı'],
-  [/-----BEGIN [A-Z ]*PRIVATE KEY-----/, 'özel anahtar'],
-  [/\b(SHOPIFY_[A-Z_]+|OFFER_[A-Z_]+)\b/, 'ortam değişkeni adı'],
-  [/merchant_(key|salt)/i, 'PayTR anahtarı'],
-  [/smtardaa|foren@|C:\\\\Users/i, 'kişisel bilgi'],
-  [/eskiparamarket/i, 'kaynak site kaydı'],
-];
 const SERVER = [
   [/["'`(]\/api\//, 'API adresi'],
   [/\bXMLHttpRequest\b|\bsendBeacon\b|new WebSocket|new EventSource/, 'ağ çağrısı'],
@@ -263,7 +255,7 @@ let baseInBundle = !BASE;
 let fetchCalls = 0;
 for (const f of textFiles) {
   const text = read(f);
-  for (const [re, name] of SECRET) if (re.test(text)) fail('Gizli değer', `${name}: ${f}`);
+  for (const name of findSecrets(text, SITE)) fail('Gizli değer', `${name}: ${f}`);
   for (const [re, name] of SERVER) if (re.test(text)) fail('Sunucu çağrısı', `${name}: ${f}`);
   if (f.endsWith('.js')) {
     fetchCalls += (text.match(/\bfetch\(/g) ?? []).length;
