@@ -1,0 +1,50 @@
+---
+import { u } from '../lib/paths.js';
+import '../styles/global.css';
+import Seo from '../components/Seo.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { site, isDemo } from '../config/site.js';
+
+interface Props {
+  title: string;
+  description?: string;
+  canonical?: string | null;
+  noindex?: boolean;
+  ogImage?: string;
+  ogType?: 'website' | 'product' | 'article';
+  jsonLd?: object | object[];
+  prev?: string | null;
+  next?: string | null;
+  preloadImage?: string | null;
+}
+const props = Astro.props;
+---
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#003F35" />
+    <link rel="icon" href={u('/brand/favicon-32.png')} type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href={u('/brand/apple-touch-icon.png')} />
+    {props.preloadImage && <link rel="preload" as="image" href={props.preloadImage} fetchpriority="high" />}
+    <Seo {...props} />
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip-link" href="#icerik">İçeriğe geç</a>
+    {isDemo && (
+      <div class="demo-strip" role="note"><strong>Statik önizleme</strong> — ürünler ve fiyatlar örnek envanterden alınmıştır. Ödeme alınmaz, teklif iletilmez.</div>
+    )}
+    <Header />
+    <main id="icerik" tabindex="-1">
+      <slot />
+    </main>
+    <Footer />
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script>
+      import '../scripts/ui.js';
+    </script>
+  </body>
+</html>

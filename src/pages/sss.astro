@@ -1,0 +1,47 @@
+---
+import { u } from '../lib/paths.js';
+import InfoPage from '../components/InfoPage.astro';
+import { business, filled, PLACEHOLDER } from '../config/business.js';
+const cm = business.commerce;
+const val = (x: any) => (filled(x) ? x : null);
+---
+<InfoPage title="Sıkça sorulan sorular" path={u('/sss')} description="Sipariş, ödeme, kargo, iade, favoriler ve ürün bilgileri hakkında sık sorulan sorular.">
+  <div class="faq">
+    <details open>
+      <summary>Fiyatlar sabit mi? Teklif verebilir miyim?</summary>
+      <p>Ürünler sabit fiyatla satılır. Yalnızca <a href={u('/teklif-ver')}>Teklif Ver</a> sayfasında listelenen seçili ürünler için teklif gönderebilirsiniz. Teklif göndermek satın alma veya rezervasyon oluşturmaz; bu bir açık artırma değildir ve başka kullanıcıların teklifleri gösterilmez.</p>
+    </details>
+    <details>
+      <summary>Ürün görselleri gerçek ürüne mi ait?</summary>
+      <p>Ürün sayfalarındaki görseller ilanın kendisine aittir; ön ve arka yüzün incelenebilmesi için görseller kırpılmadan gösterilir ve büyütülebilir.</p>
+    </details>
+    <details>
+      <summary>Kondisyon değerleri ne anlama geliyor?</summary>
+      <p>Kondisyon ölçeği ve kullanılan ifadeler için <a href={u('/koleksiyon-rehberi')}>koleksiyon rehberine</a> bakabilirsiniz.</p>
+    </details>
+    <details>
+      <summary>Hangi ödeme yöntemleri kullanılabilir?</summary>
+      <p>Ödeme, güvenli ödeme sayfasında alınır. Kabul edilen yöntemler: {val(cm.paymentMethods) ?? <span class="placeholder">{PLACEHOLDER}</span>}</p>
+    </details>
+    <details>
+      <summary>Kargo ne kadar sürer, ücreti nedir?</summary>
+      <p>Kargoya teslim süresi: {val(cm.dispatchTime) ?? <span class="placeholder">{PLACEHOLDER}</span>}. Kargo bedeli: {val(cm.shippingFee) ?? <span class="placeholder">{PLACEHOLDER}</span>}. Ayrıntılar: <a href={u('/bilgi/kargo-ve-teslimat')}>Kargo ve teslimat</a>.</p>
+    </details>
+    <details>
+      <summary>İade ve cayma hakkı nasıl işler?</summary>
+      <p>{val(cm.returnPolicySummary) ?? <span class="placeholder">{PLACEHOLDER}</span>} Ayrıntılar: <a href={u('/bilgi/iade-ve-cayma')}>İade ve cayma hakkı</a>.</p>
+    </details>
+    <details>
+      <summary>Satılmış ürünler neden sitede görünüyor?</summary>
+      <p>Koleksiyoncuların arşiv ve karşılaştırma amacıyla inceleyebilmesi için satılmış ürünlerin sayfaları açık kalır; bu ürünler “Satıldı” etiketiyle gösterilir ve satın alınamaz.</p>
+    </details>
+    <details>
+      <summary>Favorilerim neden başka cihazda görünmüyor?</summary>
+      <p>Sitede üyelik sistemi bulunmadığı için favoriler yalnızca kullandığınız tarayıcıda saklanır.</p>
+    </details>
+    <details>
+      <summary>Sepetteki fiyat değişebilir mi?</summary>
+      <p>Fiyat ve stok, ürünü sepete eklerken ve ödemeye geçmeden önce yeniden kontrol edilir. Bir ürün bu sırada satıldıysa veya fiyatı güncellendiyse sepette bildirilir.</p>
+    </details>
+  </div>
+</InfoPage>

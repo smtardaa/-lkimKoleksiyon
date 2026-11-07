@@ -1,0 +1,227 @@
+---
+import { u } from '../lib/paths.js';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProductCard from '../components/ProductCard.astro';
+import Icon from '../components/Icon.astro';
+import { loadCatalog, listable, newestProducts, childCategories, categoryUrl, productUrl } from '../lib/catalog.js';
+import { bannerNotes, roundCoins, withImages } from '../lib/showcase.js';
+import { organizationLd, websiteLd } from '../lib/seo.js';
+import { homeCards } from '../config/navigation.js';
+import { site } from '../config/site.js';
+import { formatNumber } from '../lib/format.js';
+
+const catalog: any = await loadCatalog();
+
+let hero: any = {}, cards: any = {}, tabs: any[] = [], topCats: any[] = [], band: any[] = [], antika: any = null, counts: any = {};
+if (catalog) {
+  const P = catalog.products;
+  const notes = bannerNotes(P, 2);
+  const coins = roundCoins(P, 2);
+  hero = { notes, coins };
+
+  const used = new Set([...notes.map((p) => p.id), ...coins.map((c) => c.p.id)]);
+  const pickNotes = bannerNotes(P, 12, (p) => !used.has(p.id));
+  const fan = [pickNotes[2], pickNotes[5], pickNotes[8]].filter(Boolean);
+  fan.forEach((p) => used.add(p.id));
+  let cardCoins = roundCoins(P, 2, (p) => !used.has(p.id));
+  if (cardCoins.length < 2) cardCoins = roundCoins(P, 2);
+  cardCoins.forEach((c) => used.add(c.p.id));
+  const certItem = withImages(P, (p) => p.collections.includes('sertifikali-paralar') && !used.has(p.id), 1)[0];
+  if (certItem) used.add(certItem.id);
+  const silver = roundCoins(P, 6, (p) => p.collections.includes('gumus-paralar') && !used.has(p.id))[0];
+  if (silver) used.add(silver.p.id);
+  cards = { fan, cardCoins, certItem, silver };
+
+  const all = listable(P);
+  counts = {
+    banknot: all.filter((p) => p.specs.kind === 'banknot').length,
+    madeni: all.filter((p) => p.specs.kind === 'madeni').length,
+    cert: all.filter((p) => p.collections.includes('sertifikali-paralar')).length,
+    collections: catalog.collections.filter((c: any) => c.productCount > 0).length,
+  };
+
+  tabs = [
+    { id: 'tum', label: 'Tümü', items: newestProducts(catalog, 8, (p) => p.images.length > 0) },
+    { id: 'banknot', label: 'Banknot', items: newestProducts(catalog, 8, (p) => p.images.length > 0 && p.specs.kind === 'banknot') },
+    { id: 'madeni', label: 'Madeni Para', items: newestProducts(catalog, 8, (p) => p.images.length > 0 && (p.specs.kind === 'madeni' || p.specs.kind === 'set')) },
+  ].filter((t) => t.items.length > 0);
+
+  topCats = childCategories(catalog, null, { nonEmpty: false });
+
+  const bandNotes = bannerNotes(P, 40, (p) => !used.has(p.id));
+  const bandPicks = [
+    roundCoins(P, 8, (p) => !used.has(p.id)).at(-1)?.p,
+    bandNotes[14] ?? bandNotes.at(-1),
+    withImages(P, (p) => p.specs.kind === 'set' && !used.has(p.id), 1)[0] ?? bandNotes[22] ?? bandNotes[1],
+  ].filter(Boolean);
+  band = [...new Map(bandPicks.map((p) => [p.id, p])).values()];
+
+  const antikaCat = catalog.catMap.get('antika-ve-diger');
+  const antikaItems = listable(P).filter((p) => p.categoryPaths.some((c: string) => c.startsWith('antika-ve-diger/antika')));
+  const otherItems = listable(P).filter((p) => p.categoryPaths.some((c: string) => c.startsWith('antika-ve-diger/') && !c.startsWith('antika-ve-diger/antika')));
+  antika = { cat: antikaCat, antikaItems, otherItems: otherItems.slice(0, 3), sub: childCategories(catalog, 'antika-ve-diger', { nonEmpty: false }) };
+}
+const heroPreload = hero.notes?.[0]?.images[0]?.src ?? null;
+---
+<BaseLayout
+  title={`${site.name} — Kâğıt para, madeni para ve koleksiyon parçaları`}
+  description="T.C. ve Osmanlı kâğıt paraları, madeni ve hatıra paralar, dünya banknotları, sertifikalı paralar ve koleksiyon malzemeleri. Sabit fiyatlı, detaylı ürün sayfaları."
+  canonical={u('/')}
+  jsonLd={[organizationLd(), websiteLd()]}
+  preloadImage={heroPreload}
+>
+  <>
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero-copy on-dark">
+      <svg class="hero-arcs" viewBox="0 0 600 520" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">
+        <g fill="none" stroke="#B87345" stroke-width="1.4" opacity=".85">
+          <circle cx="640" cy="420" r="230" />
+          <circle cx="640" cy="420" r="300" />
+          <circle cx="600" cy="560" r="170" />
+        </g>
+        <path d="M-20 70 C 60 40 120 20 220 -10" stroke="#B87345" stroke-width="1.4" fill="none" opacity=".8" />
+      </svg>
+      <p class="eyebrow">Numizmatik koleksiyon</p>
+      <h1 class="hero-title" id="hero-title">Geçmişi keşfet.<span class="accent">İz bırak.</span></h1>
+      <p class="hero-lead">Her döneme, her merağa özel koleksiyon parçaları.</p>
+      <div class="hero-actions">
+        <a class="btn btn--lime" href={u('/urunler')}>Koleksiyona göz at <Icon name="arrow-up-right" /></a>
+      </div>
+      <form class="hero-search" action={u('/arama')} method="get" role="search">
+        <label class="search-field">
+          <Icon name="search" />
+          <span class="visually-hidden">Katalogda ara</span>
+          <input type="search" name="q" placeholder="Ne keşfetmek istersin?" autocomplete="off" required />
+          <button type="submit">Ara</button>
+        </label>
+      </form>
+    </div>
+    <div class="hero-visual">
+      {hero.notes?.map((p: any, i: number) => (
+        <a class:list={['hero-piece', `note-${i + 1}`]} href={productUrl(p)} aria-label={p.title}>
+          <img src={p.images[0].src} width={p.images[0].width} height={p.images[0].height} alt="" fetchpriority={i === 0 ? 'high' : 'auto'} loading="eager" decoding="async" />
+        </a>
+      ))}
+      {hero.coins?.map((c: any, i: number) => (
+        <a class:list={['hero-piece', `coin-${i + 1}`]} href={productUrl(c.p)} aria-label={c.p.title}>
+          <img src={c.img.src} width={c.img.width} height={c.img.height} alt="" loading="eager" decoding="async" />
+        </a>
+      ))}
+      <p class="hero-tag" aria-hidden="true">01 <br />SEÇKİ</p>
+      <p class="hero-caption">Küçük detaylar. Büyük hikâyeler.</p>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="cat-title">
+    <div class="container">
+      <div class="section-head"><h2 id="cat-title">Koleksiyonunu seç</h2></div>
+      <div class="cat-grid">
+        <a class="cat-card cat-card--big" href={homeCards.big.href}>
+          <h3>{homeCards.big.title}</h3>
+          <p>{homeCards.big.text}</p>
+          <span class="count-pill">{formatNumber(counts.banknot)} ürün</span>
+          <span class="arrow" aria-hidden="true"><Icon name="arrow-right" /></span>
+          <div class="cat-art" aria-hidden="true">
+            {cards.fan.map((p: any) => <img src={p.images[0].srcSmall} width={p.images[0].width} height={p.images[0].height} alt="" loading="lazy" />)}
+          </div>
+        </a>
+        <a class="cat-card cat-card--coins" href={homeCards.coins.href}>
+          <h3>{homeCards.coins.title}</h3>
+          <p>{homeCards.coins.text}</p>
+          <span class="count-pill">{formatNumber(counts.madeni)} ürün</span>
+          <span class="arrow" aria-hidden="true"><Icon name="arrow-right" /></span>
+          <div class="cat-art" aria-hidden="true">
+            {cards.cardCoins.map((c: any) => <img src={c.img.srcSmall} width={c.img.width} height={c.img.height} alt="" loading="lazy" />)}
+          </div>
+        </a>
+        <a class:list={['cat-card cat-card--dark']} href={homeCards.dark.href}>
+          <h3>{homeCards.dark.title}</h3>
+          <p>{homeCards.dark.text}</p>
+          <span class="arrow" aria-hidden="true"><Icon name="arrow-right" /></span>
+          <div class="cat-art" aria-hidden="true">
+            {cards.silver && <img src={cards.silver.img.src} width={cards.silver.img.width} height={cards.silver.img.height} alt="" loading="lazy" />}
+          </div>
+        </a>
+        <a class="cat-card cat-card--cert" href={homeCards.cert.href}>
+          <h3>{homeCards.cert.title}</h3>
+          <p>{homeCards.cert.text}</p>
+          <span class="count-pill">{formatNumber(counts.cert)} ürün</span>
+          <span class="arrow" aria-hidden="true"><Icon name="arrow-right" /></span>
+          <div class="cat-art" aria-hidden="true">
+            {cards.certItem && <img src={cards.certItem.images[0].srcSmall} width={cards.certItem.images[0].width} height={cards.certItem.images[0].height} alt="" loading="lazy" />}
+          </div>
+        </a>
+      </div>
+      <ul class="cat-chips" aria-label="Ana kategoriler">
+        {topCats.map((c: any) => (
+          <li><a href={categoryUrl(c.path)}>{c.title} <span class="count">{c.productCount}</span></a></li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="section section--alt" aria-labelledby="new-title">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <h2 id="new-title">Yeni eklenenler</h2>
+          <p class="sub">Katalogdaki en yeni ürünler · <a href={u('/yeni-gelenler')}>Tümünü gör</a></p>
+        </div>
+        <div class="tabs" role="tablist" aria-label="Yeni eklenen ürün türü">
+          {tabs.map((t, i) => (
+            <button type="button" class="tab" role="tab" id={`tab-${t.id}`} aria-controls={`panel-${t.id}`} aria-selected={i === 0 ? 'true' : 'false'} tabindex={i === 0 ? 0 : -1}>{t.label}</button>
+          ))}
+        </div>
+      </div>
+      {tabs.map((t, i) => (
+        <div role="tabpanel" id={`panel-${t.id}`} aria-labelledby={`tab-${t.id}`} hidden={i !== 0} tabindex="0">
+          <div class="product-grid">
+            {t.items.map((p: any) => <ProductCard product={p} />)}
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="mini-section" aria-labelledby="antika-title">
+    <div class="container">
+      <div class="split-card">
+        <div>
+          <p class="eyebrow" style="color:var(--copper-700)">Diğer koleksiyon ürünleri</p>
+          <h2 id="antika-title" style="font-size:1.6rem;color:var(--emerald-900)">Antika ve diğer koleksiyon ürünleri</h2>
+          {antika.antikaItems.length === 0 ? (
+            <p class="muted">Antika bölümünde şu anda listelenen ürün yok. Bu grup, antika ve diğer koleksiyon parçaları envantere eklendiğinde burada görünecek.</p>
+          ) : (
+            <p class="muted">{antika.antikaItems.length} antika parça listeleniyor.</p>
+          )}
+          <ul class="chip-links" style="margin-top:12px">
+            {antika.sub.map((c: any) => <li><a href={categoryUrl(c.path)}>{c.title} ({c.productCount})</a></li>)}
+            <li><a href={u('/kategori/madalya-ve-objeler')}>Madalya ve Objeler ({catalog.catMap.get('madalya-ve-objeler')?.productCount ?? 0})</a></li>
+          </ul>
+        </div>
+        {antika.otherItems.length > 0 && (
+          <div class="product-grid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr))">
+            {antika.otherItems.map((p: any) => <ProductCard product={p} />)}
+          </div>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <section class="band on-dark" aria-labelledby="band-title">
+    <div class="container band-inner">
+      <div>
+        <h2 id="band-title">Bir koleksiyon,<br />bin hikâye<span class="dot">.</span></h2>
+        <a class="btn btn--copper-outline" href={u('/koleksiyon-rehberi')}>Koleksiyon rehberi <Icon name="arrow-up-right" /></a>
+      </div>
+      <div class="band-tiles">
+        {band.map((p: any) => (
+          <a class="band-tile" href={productUrl(p)} aria-label={p.title}>
+            <img src={p.images[0].srcSmall} width={p.images[0].width} height={p.images[0].height} alt="" loading="lazy" decoding="async" />
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+  </>
+</BaseLayout>

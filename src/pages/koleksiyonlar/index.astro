@@ -1,0 +1,38 @@
+---
+import { u } from '../../lib/paths.js';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import Icon from '../../components/Icon.astro';
+import { loadCatalog, collectionUrl, listable } from '../../lib/catalog.js';
+import { breadcrumbLd } from '../../lib/seo.js';
+
+const catalog: any = await loadCatalog();
+const crumbs = [{ title: 'Ana sayfa', href: u('/') }, { title: 'Koleksiyon seçkileri', href: u('/koleksiyonlar') }];
+const items = catalog.collections.map((c: any) => ({
+  ...c,
+  preview: listable(catalog.products).filter((p: any) => p.collections.includes(c.handle) && p.images[0]).slice(0, 3),
+}));
+---
+<BaseLayout title="Koleksiyon seçkileri" description="Sertifikalı paralar, gümüş paralar, para setleri ve polimer banknotlar gibi kategoriler arası seçkiler." canonical={u('/koleksiyonlar')} jsonLd={breadcrumbLd(crumbs)}>
+    <div class="container" style="padding-bottom:64px">
+      <div class="page-head">
+        <Breadcrumbs items={crumbs} />
+        <h1>Koleksiyon seçkileri</h1>
+        <p class="lead muted">Seçkiler, farklı kategorilerdeki ürünleri bir araya getirir. Bir ürün hem kendi kategorisinde hem seçkide görünür; kayıt çoğaltılmaz.</p>
+      </div>
+      <div class="product-grid product-grid--3">
+        {items.map((c: any) => (
+          <article class="p-card">
+            <a class="media" href={collectionUrl(c.handle)} tabindex="-1" aria-hidden="true" style="aspect-ratio:1.6;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:8px">
+              {c.preview.map((p: any) => <img src={p.images[0].srcSmall} alt="" width={p.images[0].width} height={p.images[0].height} loading="lazy" style="padding:0" />)}
+            </a>
+            <div class="body">
+              <h2 class="title" style="font-size:1.15rem"><a href={collectionUrl(c.handle)}>{c.title}</a></h2>
+              {c.description && <p class="meta">{c.description}</p>}
+              <div class="foot"><span class="muted small">{c.productCount} ürün</span><Icon name="arrow-right" /></div>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+</BaseLayout>

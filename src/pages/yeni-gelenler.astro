@@ -1,0 +1,24 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import CatalogView from '../components/CatalogView.astro';
+import { loadCatalog, search } from '../lib/catalog.js';
+import { parseState, recentProducts } from '../lib/search/engine.js';
+import { breadcrumbLd, itemListLd } from '../lib/seo.js';
+import { site, isDemo } from '../config/site.js';
+import { u } from '../lib/paths.js';
+
+const state = parseState(new URLSearchParams());
+state.sort = 'yeni';
+const catalog = await loadCatalog();
+const result = search({ ...catalog, products: recentProducts(catalog.products) }, state, { pageSize: site.pageSize });
+const crumbs = [{ title: 'Ana sayfa', href: u('/') }, { title: 'Yeni gelenler', href: u('/yeni-gelenler') }];
+---
+<BaseLayout title="Yeni gelenler" description="İlkim Koleksiyon kataloğuna en son eklenen kâğıt paralar, madeni paralar ve koleksiyon parçaları." canonical={u('/yeni-gelenler')} jsonLd={[breadcrumbLd(crumbs), itemListLd(result.items, 'Yeni gelenler')]}>
+  <div class="container page-head">
+    <Breadcrumbs items={crumbs} />
+    <h1>Yeni gelenler</h1>
+    <p class="lead muted">Kataloğa en son eklenen 96 ürün.{isDemo && ' Demo envanterde ekleme sırası, kaynak kayıt numarasına göre belirlenir (kaynakta ekleme tarihi yayınlanmıyor).'}</p>
+  </div>
+  <div class="container"><CatalogView basePath={u('/yeni-gelenler')} state={state} result={result} scope={{ recent: true }} /></div>
+</BaseLayout>

@@ -1,0 +1,29 @@
+---
+/**
+ * Katalog görünümü. Derlemede varsayılan durum çizilir; adreste filtre varsa
+ * tarayıcı aynı motor ve aynı şablonla sonucu yeniden çizer (src/scripts/catalog-client.js).
+ */
+import { renderCatalog } from '../lib/render/catalog-view.js';
+
+interface Props {
+  basePath: string;           // ör. u('/urunler')
+  state: any;                 // parseState çıktısı
+  result: any;                // runQuery çıktısı
+  omitCategoryParam?: boolean;
+  showSearchBox?: boolean;
+  emptyTitle?: string;
+  emptyText?: string;
+  subcategories?: { title: string; href: string; count: number }[];
+  scope?: { category?: string; collection?: string; recent?: boolean; search?: boolean };
+}
+const { basePath, state, result, omitCategoryParam = false, showSearchBox = true, emptyTitle, emptyText, subcategories = [], scope = {} } = Astro.props;
+const html = renderCatalog({ basePath, state, result, omitCategoryParam, showSearchBox, emptyTitle, emptyText, subcategories });
+const config = JSON.stringify({ basePath, omitCategoryParam, showSearchBox, emptyTitle, emptyText, subcategories, scope });
+---
+<div data-catalog-root data-config={config}>
+  <script is:inline>if (location.search) document.currentScript.parentElement.classList.add('catalog-pending');</script>
+  <Fragment set:html={html} />
+</div>
+<script>
+  import '../scripts/catalog-client.js';
+</script>

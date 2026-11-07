@@ -1,0 +1,37 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CatalogView from '../../components/CatalogView.astro';
+import { loadCatalog, search, collectionUrl } from '../../lib/catalog.js';
+import { parseState } from '../../lib/search/engine.js';
+import { breadcrumbLd, itemListLd } from '../../lib/seo.js';
+import { site } from '../../config/site.js';
+import { truncate } from '../../lib/format.js';
+import { u } from '../../lib/paths.js';
+
+export async function getStaticPaths() {
+  const { collections } = await loadCatalog();
+  return collections.map((c) => ({ params: { handle: c.handle } }));
+}
+
+const handle = Astro.params.handle;
+const catalog = await loadCatalog();
+const coll = catalog.collMap.get(handle);
+const state = parseState(new URLSearchParams());
+const result = search(catalog, state, { pageSize: site.pageSize, baseCollection: handle });
+const base = collectionUrl(handle);
+const crumbs = [{ title: 'Ana sayfa', href: u('/') }, { title: 'Koleksiyon seçkileri', href: u('/koleksiyonlar') }, { title: coll.title, href: base }];
+---
+<BaseLayout
+  title={coll.title}
+  description={truncate(`${coll.description ?? coll.title} ${coll.productCount} ürün.`, 158)}
+  canonical={base}
+  jsonLd={[breadcrumbLd(crumbs), itemListLd(result.items, coll.title)]}
+>
+  <div class="container page-head">
+    <Breadcrumbs items={crumbs} />
+    <h1>{coll.title}</h1>
+    {coll.description && <p class="lead muted">{coll.description}</p>}
+  </div>
+  <div class="container"><CatalogView basePath={base} state={state} result={result} scope={{ collection: handle }} /></div>
+</BaseLayout>

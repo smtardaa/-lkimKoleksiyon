@@ -1,0 +1,41 @@
+---
+import { u } from '../lib/paths.js';
+import InfoPage from '../components/InfoPage.astro';
+import Icon from '../components/Icon.astro';
+import { business, filled, PLACEHOLDER, whatsappUrl, phoneUrl, emailUrl, socialLinks } from '../config/business.js';
+const c = business.contact;
+const wa = whatsappUrl();
+const tel = phoneUrl();
+const mail = emailUrl();
+const socials = socialLinks();
+const formReady = filled(business.contactFormEndpoint);
+---
+<InfoPage title="İletişim" path={u('/iletisim')} description="İlkim Koleksiyon iletişim bilgileri ve iletişim formu.">
+  <h2>İletişim bilgileri</h2>
+  <dl class="contact-list">
+    <dt>Telefon</dt><dd>{tel ? <a href={tel}>{c.phone}</a> : <span class="placeholder">{PLACEHOLDER}</span>}</dd>
+    <dt>WhatsApp</dt><dd>{wa ? <a href={wa} rel="noopener" target="_blank"><Icon name="whatsapp" /> Mesaj gönder</a> : <span class="placeholder">{PLACEHOLDER}</span>}</dd>
+    <dt>E-posta</dt><dd>{mail ? <a href={mail}>{c.email}</a> : <span class="placeholder">{PLACEHOLDER}</span>}</dd>
+    <dt>Adres</dt><dd>{filled(c.address) ? <>{c.address}{c.district && `, ${c.district}`}{c.city && ` / ${c.city}`}</> : <span class="placeholder">{PLACEHOLDER}</span>}</dd>
+    <dt>Çalışma saatleri</dt><dd>{filled(c.openingHours) ? c.openingHours.map((h: any) => <div>{h.days}: {h.hours}</div>) : <span class="placeholder">{PLACEHOLDER}</span>}</dd>
+    {socials.length > 0 && <><dt>Sosyal medya</dt><dd>{socials.map((s) => <a href={s.url} rel="noopener" target="_blank" style="margin-right:12px">{s.label}</a>)}</dd></>}
+  </dl>
+
+  <h2>İletişim formu</h2>
+  {!formReady && (
+    <p class="notice">
+      İletişim formu henüz bir gönderim hizmetine bağlanmadı; bu nedenle form gönderilemez ve mesajlar iletilmez.
+      Bağlantı için <code>business.contactFormEndpoint</code> ayarlanmalıdır.
+    </p>
+  )}
+  <form class="form-grid" method="post" action={formReady ? business.contactFormEndpoint : undefined} data-contact-form aria-describedby="form-state">
+    <fieldset disabled={!formReady} style="border:0;padding:0;margin:0;display:grid;gap:14px">
+      <label>Ad soyad<input class="field" type="text" name="ad" autocomplete="name" required /></label>
+      <label>E-posta<input class="field" type="email" name="eposta" autocomplete="email" required /></label>
+      <label>Konu<input class="field" type="text" name="konu" /></label>
+      <label>Mesaj<textarea class="field" name="mesaj" required></textarea></label>
+      <button class="btn btn--lime" type="submit">Gönder</button>
+    </fieldset>
+    <p id="form-state" class="small muted">{formReady ? 'Gönderim sonucunu form servisi bildirir.' : 'Form şu anda devre dışı.'}</p>
+  </form>
+</InfoPage>

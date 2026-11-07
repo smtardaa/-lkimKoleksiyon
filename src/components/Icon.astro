@@ -1,0 +1,7 @@
+---
+/** Satır içi SVG ikonlar (dış ikon kütüphanesi yok). Dekoratif: aria-hidden. */
+import { iconSvg } from '../lib/icons.js';
+interface Props { name: string; class?: string; size?: number }
+const { name, class: cls = 'icon', size } = Astro.props;
+---
+<Fragment set:html={iconSvg(name, cls, size)} />

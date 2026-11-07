@@ -1,0 +1,21 @@
+{
+  "name": "ilkim-koleksiyon",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "İlkim Koleksiyon — GitHub Pages için statik önizleme sürümü",
+  "scripts": {
+    "dev": "astro dev --port 5510 --host 127.0.0.1",
+    "build": "astro build",
+    "preview": "node scripts/serve-dist.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "check:static": "node scripts/check-static.mjs"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "dependencies": {
+    "@fontsource-variable/plus-jakarta-sans": "^5.3.0",
+    "astro": "^7.4.5"
+  }
+}

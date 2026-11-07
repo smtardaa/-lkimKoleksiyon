@@ -1,0 +1,46 @@
+---
+/**
+ * Sayfa başı SEO etiketleri.
+ * İndeksleme kararı: config/site.js → indexingEnabled.
+ * Demo/staging ortamında her sayfa noindex döner (meta + middleware'deki X-Robots-Tag).
+ */
+import { site, absoluteUrl, indexingEnabled } from '../config/site.js';
+import { u } from '../lib/paths.js';
+
+interface Props {
+  title: string;
+  description?: string;
+  canonical?: string | null;   // yol veya mutlak URL; null → canonical yok
+  noindex?: boolean;           // sayfaya özgü noindex (arama, sepet, filtre kombinasyonları)
+  ogImage?: string;
+  ogType?: 'website' | 'product' | 'article';
+  jsonLd?: object | object[];
+  prev?: string | null;
+  next?: string | null;
+}
+const { title, description = site.defaultDescription, canonical, noindex = false, ogImage = u(site.defaultOgImage), ogType = 'website', jsonLd, prev, next } = Astro.props;
+
+const fullTitle = title.includes(site.name) ? title : `${title} | ${site.name}`;
+const canonicalUrl = canonical === null ? null : absoluteUrl(canonical ?? Astro.url.pathname);
+const robots = !indexingEnabled || noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large';
+const ldList = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
+const ogImg = absoluteUrl(ogImage);
+---
+<title>{fullTitle}</title>
+<meta name="description" content={description} />
+<meta name="robots" content={robots} />
+{canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+{prev && <link rel="prev" href={absoluteUrl(prev)} />}
+{next && <link rel="next" href={absoluteUrl(next)} />}
+<meta property="og:site_name" content={site.name} />
+<meta property="og:locale" content={site.locale} />
+<meta property="og:type" content={ogType} />
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={description} />
+{canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
+<meta property="og:image" content={ogImg} />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={fullTitle} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={ogImg} />
+{ldList.map((ld) => <script type="application/ld+json" set:html={JSON.stringify(ld).replace(/</g, '\\u003c')} />)}

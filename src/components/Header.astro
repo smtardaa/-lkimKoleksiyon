@@ -1,0 +1,65 @@
+---
+import { u } from '../lib/paths.js';
+import Icon from './Icon.astro';
+import { mainNav, topCategories } from '../config/navigation.js';
+const path = Astro.url.pathname;
+const isCurrent = (href: string) => path.startsWith(href);
+---
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href={u('/')} aria-label="İlkim Koleksiyon — ana sayfa">
+      <img src={u('/brand/amblem-96.png')} srcset={`${u('/brand/amblem-96.png')} 1x, ${u('/brand/amblem-192.png')} 2x`} width="50" height="50" alt="" />
+      <span class="brand-text" aria-hidden="true"><span>İlkim</span><span>Koleksiyon</span></span>
+    </a>
+
+    <nav class="main-nav" id="main-nav" aria-label="Ana menü" data-open="false">
+      <ul>
+        {mainNav.map((item) => item.dropdown ? (
+          <li class="nav-item--dropdown">
+            <button type="button" class="nav-link" aria-expanded="false" aria-controls="cat-dropdown" data-dropdown-toggle>
+              {item.label} <Icon name="chevron-down" />
+            </button>
+            <div class="dropdown" id="cat-dropdown" hidden>
+              {topCategories.map((c) => <a href={u(`/kategori/${c.path}`)}>{c.title}</a>)}
+              <a href={u('/koleksiyonlar/sertifikali-paralar')}>Sertifikalı Paralar</a>
+              <a href={u('/kategori')}><strong>Bütün kategoriler</strong></a>
+            </div>
+          </li>
+        ) : (
+          <li><a href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}>{item.label}</a></li>
+        ))}
+      </ul>
+    </nav>
+
+    <div class="header-tools">
+      <button type="button" class="icon-btn" data-search-open aria-label="Ara" aria-haspopup="dialog">
+        <Icon name="search" />
+      </button>
+      <a class="icon-btn" href={u('/favoriler')} aria-label="Favoriler">
+        <Icon name="heart" />
+        <span class="badge-count" data-fav-count hidden>0</span>
+      </a>
+      <a class="icon-btn" href={u('/sepet')} aria-label="Sepet">
+        <Icon name="bag" />
+        <span class="badge-count" data-cart-count hidden>0</span>
+      </a>
+      <button type="button" class="icon-btn menu-toggle" aria-controls="main-nav" aria-expanded="false" aria-label="Menüyü aç" data-menu-toggle>
+        <Icon name="menu" />
+      </button>
+    </div>
+  </div>
+</header>
+
+<dialog class="search-dialog" id="search-dialog" aria-labelledby="search-dialog-title">
+  <form action={u('/arama')} method="get" role="search">
+    <h2 id="search-dialog-title" class="visually-hidden">Katalogda ara</h2>
+    <label class="search-field">
+      <span class="visually-hidden">Arama ifadesi</span>
+      <Icon name="search" />
+      <input type="search" name="q" autocomplete="off" placeholder="Ülke, yıl, nominal, emisyon, katalog no…" required minlength="1" />
+      <button type="submit">Ara</button>
+    </label>
+    <p class="hint">Örnek: “5 emisyon 5 lira”, “almanya 1000 mark”, “P-173a”, “gümüş 1940”, “PMG”.</p>
+  </form>
+  <button type="button" class="icon-btn close" data-search-close aria-label="Aramayı kapat"><Icon name="close" /></button>
+</dialog>

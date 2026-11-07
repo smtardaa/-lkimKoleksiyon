@@ -1,0 +1,45 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import { loadCatalog, offerProducts } from '../../lib/catalog.js';
+import { breadcrumbLd, itemListLd } from '../../lib/seo.js';
+import { OFFER_DISCLAIMER } from '../../lib/offers/status.js';
+import { isDemo } from '../../config/site.js';
+import { u } from '../../lib/paths.js';
+
+const products = offerProducts(await loadCatalog());
+const crumbs = [{ title: 'Ana sayfa', href: u('/') }, { title: 'Teklif Ver', href: u('/teklif-ver') }];
+---
+<BaseLayout
+  title="Teklif Ver"
+  description="İlkim Koleksiyon'da teklif alınan seçili kâğıt para ve koleksiyon parçaları. Ürünü seçin, teklifinizi işletmenin değerlendirmesine gönderin."
+  canonical={u('/teklif-ver')}
+  jsonLd={[breadcrumbLd(crumbs), itemListLd(products, 'Teklif alınan ürünler')]}
+>
+  <div class="container page-head">
+    <Breadcrumbs items={crumbs} />
+    <h1>Teklif Ver</h1>
+    <p class="lead muted">Seçili parçalar sabit fiyatla satılmaz; bu ürünler için teklifinizi iletebilirsiniz. Diğer bütün ürünler <a href={u('/urunler')}>mağazada</a> sabit fiyatla satılır.</p>
+  </div>
+  <div class="container" style="padding-bottom:64px">
+    <div class="offer-intro">
+      <p class="notice" style="margin:0">{OFFER_DISCLAIMER} Bu bir açık artırma değildir; başka kullanıcıların teklifleri gösterilmez.</p>
+      {isDemo && <p class="notice notice--demo" style="margin:0"><strong>Demo:</strong> Teklifler işletmeye gönderilmez ve kaydedilmez.</p>}
+    </div>
+    {products.length > 0 ? (
+      <>
+        <h2 class="visually-hidden">Teklif alınan ürünler</h2>
+        <div class="product-grid">
+          {products.map((p, i) => <ProductCard product={p} eager={i < 4} />)}
+        </div>
+      </>
+    ) : (
+      <div class="empty-state">
+        <h2>Şu anda teklif alınan ürün yok</h2>
+        <p class="muted">Teklife açılan parçalar burada listelenecek. Sabit fiyatlı ürünlere mağazadan göz atabilirsiniz.</p>
+        <div class="actions"><a class="btn btn--lime" href={u('/urunler')}>Mağazaya git</a></div>
+      </div>
+    )}
+  </div>
+</BaseLayout>

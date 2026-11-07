@@ -1,0 +1,26 @@
+---
+import { u } from '../lib/paths.js';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import { topCategories } from '../config/navigation.js';
+---
+<BaseLayout title="Sayfa bulunamadı" description="Aradığınız sayfa bulunamadı." canonical={null} noindex>
+  <section class="container section">
+    <div class="empty-state">
+      <p class="eyebrow" style="color:var(--copper-700)">Hata 404</p>
+      <h1>Aradığınız sayfa bulunamadı</h1>
+      <p class="muted">Adres değişmiş ya da ürün yayından kaldırılmış olabilir. Katalogda arayarak devam edebilirsiniz.</p>
+      <form action={u('/arama')} method="get" role="search" style="max-width:520px;margin:18px auto 0">
+        <label class="search-field" style="color:var(--ink);background:var(--paper)">
+          <Icon name="search" /><span class="visually-hidden">Katalogda ara</span>
+          <input type="search" name="q" placeholder="Ülke, yıl, nominal değer…" />
+          <button type="submit">Ara</button>
+        </label>
+      </form>
+      <ul class="chip-links" style="justify-content:center;margin-top:18px">
+        {topCategories.slice(0, 5).map((c) => <li><a href={u(`/kategori/${c.path}`)}>{c.title}</a></li>)}
+      </ul>
+      <div class="actions"><a class="btn btn--lime" href={u('/')}>Ana sayfa</a><a class="btn btn--outline" href={u('/urunler')}>Tüm ürünler</a></div>
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,49 @@
+---
+import { u } from '../lib/paths.js';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+const crumbs = [{ title: 'Ana sayfa', href: u('/') }, { title: 'Sepet', href: u('/sepet') }];
+---
+<BaseLayout title="Sepet" description="Sepetinizdeki ürünler." canonical={u('/sepet')} noindex>
+  <div class="container page-head">
+    <Breadcrumbs items={crumbs} />
+    <h1>Sepet</h1>
+  </div>
+  <div class="container" data-cart-root>
+    <noscript><p class="notice">Sepet bu tarayıcıda saklanır ve JavaScript gerektirir.</p></noscript>
+    <div class="cart-layout">
+      <div>
+        <p class="muted" data-cart-status role="status" aria-live="polite">Sepet yükleniyor…</p>
+        <ul class="cart-lines" data-cart-lines></ul>
+        <div class="empty-state" data-cart-empty hidden>
+          <h2>Sepetiniz boş</h2>
+          <p class="muted">Koleksiyona göz atıp beğendiğiniz parçaları ekleyebilirsiniz.</p>
+          <div class="actions"><a class="btn btn--lime" href={u('/urunler')}>Ürünlere göz at</a><a class="btn btn--outline" href={u('/favoriler')}>Favoriler</a></div>
+        </div>
+      </div>
+      <aside class="summary" aria-labelledby="sum-title" data-cart-summary hidden>
+        <h2 id="sum-title" style="font-size:1.2rem;margin:0">Sipariş özeti</h2>
+        <dl>
+          <dt>Ara toplam</dt><dd data-subtotal>—</dd>
+          <dt>Kargo</dt><dd class="small muted" style="font-weight:500">Ödeme adımında hesaplanır</dd>
+          <dt class="total">Toplam (kargo hariç)</dt><dd class="total" data-total>—</dd>
+        </dl>
+        <p class="small muted" style="margin:0" data-checked-at></p>
+        <button type="button" class="btn btn--lime btn--block" data-checkout>Ödemeye geç</button>
+        <p class="notice notice--demo small" style="margin:0"><strong>Demo mağaza:</strong> Ödeme adımı gerçek ödemeye bağlı değildir; sipariş oluşturulmaz.</p>
+        <p class="form-msg" data-checkout-msg role="alert"></p>
+      </aside>
+    </div>
+  </div>
+
+  <dialog class="modal" id="demo-checkout" aria-labelledby="demo-co-title">
+    <h2 id="demo-co-title">Bu bir demo mağazadır</h2>
+    <p>Demo ürünler gerçek ödemeye gönderilmez. <strong>Ödeme alınmadı ve sipariş oluşturulmadı.</strong></p>
+    <p class="small muted">Canlı mağazada bu adım Shopify Checkout'a yönlenir; ödeme yöntemi (ör. PayTR) Shopify yönetim panelinde etkinleştirilir.</p>
+    <form method="dialog"><button class="btn btn--lime" value="close">Anladım</button></form>
+  </dialog>
+
+  <script>
+    import '../scripts/cart-page.js';
+  </script>
+</BaseLayout>

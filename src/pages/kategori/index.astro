@@ -1,0 +1,36 @@
+---
+import { u } from '../../lib/paths.js';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import { loadCatalog, childCategories, categoryUrl } from '../../lib/catalog.js';
+import { breadcrumbLd } from '../../lib/seo.js';
+
+const catalog: any = await loadCatalog();
+const crumbs = [{ title: 'Ana sayfa', href: u('/') }, { title: 'Kategoriler', href: u('/kategori') }];
+const tops = childCategories(catalog, null, { nonEmpty: false });
+---
+<BaseLayout title="Bütün kategoriler" description="İlkim Koleksiyon kategori haritası: T.C. ve Osmanlı paraları, yabancı paralar, hatıra paraları, koleksiyon malzemeleri ve diğer gruplar." canonical={u('/kategori')} jsonLd={breadcrumbLd(crumbs)}>
+    <div class="container" style="padding-bottom:64px">
+      <div class="page-head">
+        <Breadcrumbs items={crumbs} />
+        <h1>Bütün kategoriler</h1>
+        <p class="lead muted">Ürün bulunan alt kategoriler sayılarıyla listelenir; ayrıntılı süzme için kategori sayfalarındaki filtreleri kullanın.</p>
+      </div>
+      <div style="display:grid;gap:18px;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr))">
+        {tops.map((c: any) => {
+          const subs = childCategories(catalog, c.path);
+          return (
+            <section class="info-panel" style="margin:0" aria-labelledby={`k-${c.path}`}>
+              <h2 id={`k-${c.path}`} style="font-size:1.15rem"><a href={categoryUrl(c.path)}>{c.title}</a> <span class="muted small">({c.productCount})</span></h2>
+              {c.description && <p class="small muted">{c.description}</p>}
+              {subs.length > 0 ? (
+                <ul class="chip-links">
+                  {subs.slice(0, c.path === 'yabanci-paralar' ? 400 : 60).map((s: any) => <li><a href={categoryUrl(s.path)}>{s.title} ({s.productCount})</a></li>)}
+                </ul>
+              ) : c.productCount === 0 ? <p class="small muted">Bu grupta henüz ürün yok.</p> : null}
+            </section>
+          );
+        })}
+      </div>
+    </div>
+</BaseLayout>

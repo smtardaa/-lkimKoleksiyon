@@ -1,0 +1,25 @@
+---
+import { u } from '../lib/paths.js';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+const crumbs = [{ title: 'Ana sayfa', href: u('/') }, { title: 'Favoriler', href: u('/favoriler') }];
+---
+<BaseLayout title="Favoriler" description="Favorilere eklediğiniz ürünler." canonical={u('/favoriler')} noindex>
+  <div class="container page-head">
+    <Breadcrumbs items={crumbs} />
+    <h1>Favoriler</h1>
+    <p class="small muted">Üyelik sistemi bulunmadığından favoriler yalnızca bu tarayıcıda saklanır; başka cihazda görünmez.</p>
+  </div>
+  <div class="container" style="padding-bottom:64px" data-fav-root>
+    <p class="muted" data-fav-status role="status" aria-live="polite">Favoriler yükleniyor…</p>
+    <div class="product-grid" data-fav-grid></div>
+    <div class="empty-state" data-fav-empty hidden>
+      <h2>Henüz favori ürününüz yok</h2>
+      <p class="muted">Ürün kartlarındaki kalp simgesiyle beğendiğiniz parçaları burada toplayabilirsiniz.</p>
+      <div class="actions"><a class="btn btn--lime" href={u('/urunler')}>Ürünlere göz at</a></div>
+    </div>
+  </div>
+  <script>
+    import '../scripts/favorites-page.js';
+  </script>
+</BaseLayout>

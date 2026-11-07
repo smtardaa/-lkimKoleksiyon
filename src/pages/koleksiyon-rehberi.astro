@@ -1,0 +1,31 @@
+---
+import { u } from '../lib/paths.js';
+import InfoPage from '../components/InfoPage.astro';
+---
+<InfoPage title="Koleksiyon rehberi" path={u('/koleksiyon-rehberi')} description="Kâğıt para ve madeni para koleksiyonu için kısa rehber: emisyon, tertip, kondisyon, Pick katalog numarası, sertifikalı paralar, hicrî tarihler ve saklama." lead="Ürün sayfalarında karşılaşacağınız temel kavramlar için kısa bir başlangıç rehberi.">
+  <h2>Emisyon ve tertip</h2>
+  <p><strong>Emisyon</strong>, bir merkez bankasının belirli bir dönemde tedavüle çıkardığı banknot ailesini ifade eder. Türkiye Cumhuriyeti banknotları 1. emisyondan başlayarak sıralanır. Aynı emisyon içinde baskı, imza veya küçük tasarım farklarıyla ayrılan alt gruplara <strong>tertip</strong> denir.</p>
+
+  <h2>Kondisyon</h2>
+  <p>Kondisyon, paranın korunmuşluk durumunu anlatır. Türkiye'deki satıcılar sıklıkla <strong>10 üzerinden</strong> bir ölçek kullanır: 10/10 genellikle hiç dolaşmamış (“çil”) parçalar için, daha düşük değerler kullanım izi, kırım veya lekeye göre verilir. Bu ölçek satıcıdan satıcıya farklılık gösterebileceği için ürün görsellerini ön ve arka yüzden incelemeniz önerilir.</p>
+  <p>Sık kullanılan ifadeler: <em>çil</em> (dolaşım görmemiş), <em>çilaltı</em> (çile yakın), <em>ÇT</em> (çok temiz).</p>
+
+  <h2>Katalog numarası (Pick)</h2>
+  <p>Dünya banknotları uluslararası kataloglarda numaralandırılır; en yaygın olanı “Pick” numarasıdır (ör. <em>P-173a</em>). Harf eki, aynı tipin baskı/imza varyantlarını gösterir. Katalog numarasıyla arama yaparak aynı tipteki ürünleri bulabilirsiniz.</p>
+
+  <h2>Sertifikalı paralar</h2>
+  <p>Bazı parçalar bağımsız derecelendirme kuruluşlarınca (ör. PMG, NGC, PCGS) incelenir ve kapalı bir kılıf içinde, sayısal bir derece ile sertifikalandırılır. Örneğin “PMG 58”, PMG'nin 70'lik ölçeğinde verilen dereceyi ifade eder. Sertifika numarası ilgili kuruluşun sitesinden doğrulanabilir.</p>
+  <p>Darphane gibi kurumların hatıra paralarıyla verdiği “sertifika” ise genellikle bir orijinallik belgesidir; derecelendirme anlamına gelmez.</p>
+
+  <h2>Hicrî ve miladî tarihler</h2>
+  <p>Osmanlı sikkelerinde tarih çoğunlukla hicrî takvimle ve <strong>cülus yılı / saltanat yılı</strong> biçiminde yazılır (ör. 1327/1: hükümdarın tahta çıktığı hicrî yıl ve saltanatının 1. yılı). Bu nedenle katalogda hicrî ve miladî yıllar ayrı tutulur; yıl filtresinde takvimi seçebilirsiniz.</p>
+
+  <h2>Saklama önerileri</h2>
+  <ul>
+    <li>Paraları çıplak elle değil, kenarlarından veya pamuklu eldivenle tutun.</li>
+    <li>Asitsiz (PVC içermeyen) föy, kapsül ve albümler kullanın.</li>
+    <li>Nemden, doğrudan güneş ışığından ve ani sıcaklık değişimlerinden uzak tutun.</li>
+    <li>Paraları temizlemeye çalışmayın; temizleme koleksiyon değerini düşürebilir.</li>
+  </ul>
+  <p>Koleksiyon malzemeleri için <a href={u('/kategori/pul-ve-koleksiyon-malzemeleri')}>Pul ve Koleksiyon Malzemeleri</a> kategorisine göz atabilirsiniz. Sorularınız için <a href={u('/sss')}>SSS</a> sayfasına bakın.</p>
+</InfoPage>

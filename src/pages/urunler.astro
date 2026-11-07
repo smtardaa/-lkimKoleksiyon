@@ -1,0 +1,29 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import CatalogView from '../components/CatalogView.astro';
+import { loadCatalog, search } from '../lib/catalog.js';
+import { parseState } from '../lib/search/engine.js';
+import { breadcrumbLd, itemListLd } from '../lib/seo.js';
+import { site } from '../config/site.js';
+import { u } from '../lib/paths.js';
+
+const state = parseState(new URLSearchParams());
+const result = search(await loadCatalog(), state, { pageSize: site.pageSize });
+const crumbs = [{ title: 'Ana sayfa', href: u('/') }, { title: 'Tüm ürünler', href: u('/urunler') }];
+---
+<BaseLayout
+  title="Tüm ürünler"
+  description="İlkim Koleksiyon kataloğundaki bütün kâğıt paralar, madeni paralar, hatıra paraları ve koleksiyon malzemeleri; ülke, yıl, emisyon, kondisyon ve fiyata göre filtreleyin."
+  canonical={u('/urunler')}
+  jsonLd={[breadcrumbLd(crumbs), itemListLd(result.items, 'Tüm ürünler')]}
+>
+  <div class="container page-head">
+    <Breadcrumbs items={crumbs} />
+    <h1>Tüm ürünler</h1>
+    <p class="lead muted">Kataloğun tamamında filtreleyin; sonuç sayısı ve filtre sayıları bütün ürünler üzerinden hesaplanır.</p>
+  </div>
+  <div class="container">
+    <CatalogView basePath={u('/urunler')} state={state} result={result} />
+  </div>
+</BaseLayout>

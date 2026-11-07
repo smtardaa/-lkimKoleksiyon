@@ -1,0 +1,52 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CatalogView from '../../components/CatalogView.astro';
+import { loadCatalog, search, categoryTrail, childCategories, categoryUrl } from '../../lib/catalog.js';
+import { parseState } from '../../lib/search/engine.js';
+import { breadcrumbLd, itemListLd } from '../../lib/seo.js';
+import { site } from '../../config/site.js';
+import { truncate } from '../../lib/format.js';
+import { u } from '../../lib/paths.js';
+
+export async function getStaticPaths() {
+  const { categories } = await loadCatalog();
+  return categories.map((c) => ({ params: { path: c.path } }));
+}
+
+const path = Astro.params.path;
+const catalog = await loadCatalog();
+const category = catalog.catMap.get(path);
+const state = parseState(new URLSearchParams());
+const result = search(catalog, state, { pageSize: site.pageSize, baseCategory: path });
+
+const trail = categoryTrail(catalog, path);
+const crumbs = [{ title: 'Ana sayfa', href: u('/') }, { title: 'Kategoriler', href: u('/kategori') }, ...trail];
+const subs = childCategories(catalog, path).map((c) => ({ title: c.title, href: categoryUrl(c.path), count: c.productCount }));
+const parentTitles = trail.slice(0, -1).map((t) => t.title);
+const title = [category.title, ...parentTitles.slice(-1)].join(' — ');
+const description = truncate(category.description
+  ? `${category.description} ${category.productCount} ürün.`
+  : `${[...parentTitles, category.title].join(' › ')}: ${category.productCount} ürün. Yıl, kondisyon, katalog numarası ve fiyata göre filtreleyin.`, 158);
+---
+<BaseLayout title={title} description={description} canonical={categoryUrl(path)} jsonLd={[breadcrumbLd(crumbs), itemListLd(result.items, category.title)]}>
+  <div class="container page-head">
+    <Breadcrumbs items={crumbs} />
+    <h1>{category.title}</h1>
+    {category.description && <p class="lead muted">{category.description}</p>}
+  </div>
+  <div class="container">
+    {category.productCount === 0 ? (
+      <div class="empty-state" style="margin-bottom:64px">
+        <h2>Bu kategoride şu anda ürün yok</h2>
+        <p class="muted">“{category.title}” kategorisi mağaza yapısında yer alıyor; ürünler envantere eklendiğinde burada listelenecek.</p>
+        <div class="actions">
+          {category.parent && <a class="btn btn--outline" href={categoryUrl(category.parent)}>Üst kategoriye dön</a>}
+          <a class="btn btn--lime" href={u('/urunler')}>Bütün ürünlere göz at</a>
+        </div>
+      </div>
+    ) : (
+      <CatalogView basePath={categoryUrl(path)} state={state} result={result} omitCategoryParam subcategories={subs} scope={{ category: path }} />
+    )}
+  </div>
+</BaseLayout>

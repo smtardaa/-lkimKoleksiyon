@@ -1,0 +1,221 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import Icon from '../../components/Icon.astro';
+import { loadCatalog, categoryTrail, categoryUrl, collectionUrl, productUrl, relatedProducts } from '../../lib/catalog.js';
+import { purchaseLimit } from '../../lib/cart-core.js';
+import { u } from '../../lib/paths.js';
+import { breadcrumbLd, productLd, organizationLd } from '../../lib/seo.js';
+import { formatMoney, KIND_LABEL, STATUS_LABEL, truncate } from '../../lib/format.js';
+import { isOfferOnly, offerStatus, offerUrl, OFFER_DISCLAIMER } from '../../lib/offers/status.js';
+import { business, filled, PLACEHOLDER } from '../../config/business.js';
+import { isDemo } from '../../config/site.js';
+
+export async function getStaticPaths() {
+  const { products } = await loadCatalog();
+  return products.map((product) => ({ params: { handle: product.handle }, props: { product } }));
+}
+
+const { product } = Astro.props;
+const catalog = await loadCatalog();
+
+let crumbs: any[] = [], specs: [string, string][] = [], related: any[] = [], catLinks: any[] = [], collLinks: any[] = [], limit = 0, primaryTitle: string | null = null;
+if (product) {
+  const trail = product.primaryCategory ? categoryTrail(catalog, product.primaryCategory) : [];
+  crumbs = [{ title: 'Ana sayfa', href: u('/') }, ...trail, { title: product.title, href: productUrl(product) }];
+  primaryTitle = trail.at(-1)?.title ?? null;
+  const s = product.specs;
+  const add = (k: string, v: any) => { if (v != null && v !== '') specs.push([k, String(v)]); };
+  add('Tür', s.kind ? KIND_LABEL[s.kind] : null);
+  add('Ülke / devlet', s.country);
+  add('Nominal değer', s.denomination?.label);
+  add('Emisyon', s.emission ? `${s.emission}. Emisyon` : null);
+  add('Tertip', product.extra?.tertip);
+  add('Hükümdar', s.ruler);
+  add('Dönem', s.period);
+  add(s.calendar === 'hicri' ? 'Tarih (Hicrî)' : 'Yıl', s.yearText ? (s.calendar === 'hicri' ? `${s.yearText} — hicrî cülus yılı / saltanat yılı` : s.yearText) : null);
+  add('Katalog numarası', s.catalogNumber);
+  add('Kondisyon', s.condition ? `${s.condition.label}${s.condition.scale ? ` (${s.condition.scale})` : ''}` : null);
+  add('Sertifika', s.certification ? `${s.certification.service}${s.certification.grade ? ' ' + s.certification.grade : ''}${s.certification.label ? ' · No: ' + s.certification.label : ''}` : null);
+  add('Belge notu', product.extra?.certificateNote);
+  add('Metal', s.metal);
+  add('Malzeme', product.extra?.material);
+  add('Ürün kodu', product.sku);
+  related = relatedProducts(catalog, product, 8);
+  catLinks = product.categoryPaths
+    .map((p: string) => catalog.catMap.get(p))
+    .filter(Boolean)
+    .sort((a: any, b: any) => a.path.split('/').length - b.path.split('/').length);
+  collLinks = product.collections.map((h: string) => catalog.collMap.get(h)).filter(Boolean);
+  limit = purchaseLimit(product);
+}
+const status = product?.availability.status;
+const img0 = product?.images?.[0];
+const offer = product && isOfferOnly(product) ? offerStatus(product) : null;
+// Teklif ürünlerinde açık fiyat yoktur; meta açıklamaya da yazılmaz.
+const priceDesc = offer ? (offer.accepting ? 'Teklife açık ürün' : 'Teklif alımı kapalı') : product ? `Fiyat: ${formatMoney(product.price)}` : '';
+const desc = product ? truncate(product.seoDescription || `${product.title}. ${product.summary} ${priceDesc}${status === 'sold' ? ' — satıldı' : status === 'out_of_stock' ? ' — stokta yok' : ''}.`, 158) : '';
+const commerce = business.commerce;
+const deliveryRows = [
+  ['Kargoya teslim', commerce.dispatchTime],
+  ['Kargo bedeli', commerce.shippingFee],
+  ['Kargo firması', commerce.carriers],
+  ['Paketleme', commerce.packaging],
+  ['İade / cayma', commerce.returnPolicySummary],
+];
+---
+<BaseLayout
+  title={product ? (product.seoTitle || product.title) : 'Ürün'}
+  description={desc}
+  canonical={product ? productUrl(product) : null}
+  ogType="product"
+  ogImage={img0?.src}
+  preloadImage={img0?.src}
+  jsonLd={product ? [productLd(product, { categoryName: primaryTitle }), breadcrumbLd(crumbs), organizationLd()] : undefined}
+>
+  <>
+  <div class="container page-head" style="padding-bottom:18px">
+    <Breadcrumbs items={crumbs} />
+  </div>
+  <div class="container">
+    <div class="pdp">
+      <div class="gallery" data-gallery>
+        <div class="gallery-main">
+          {img0 ? (
+            <button type="button" class="zoom" data-zoom aria-label="Görseli büyüt">
+              <img data-main src={img0.src} width={img0.width} height={img0.height} alt={img0.alt} fetchpriority="high" decoding="async" />
+            </button>
+          ) : <span class="muted" style="display:grid;place-items:center;height:100%">Görsel yok</span>}
+          {img0 && <span class="gallery-hint" aria-hidden="true"><Icon name="zoom" /> Büyütmek için tıklayın</span>}
+          {status === 'sold' && <span class="status-badge status-badge--sold">Satıldı</span>}
+        </div>
+        {product.images.length > 1 && (
+          <ul class="thumbs" aria-label="Ürün görselleri">
+            {product.images.map((im: any, i: number) => (
+              <li>
+                <button type="button" data-thumb={i} data-src={im.src} data-alt={im.alt} data-w={im.width} data-h={im.height} aria-current={i === 0 ? 'true' : 'false'} aria-label={`Görsel ${i + 1}: ${im.alt}`}>
+                  <img src={im.srcSmall ?? im.src} alt="" width="76" height="76" loading="lazy" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        <script type="application/json" data-gallery-images set:html={JSON.stringify(product.images.map((i: any) => ({ src: i.src, alt: i.alt, w: i.width, h: i.height }))).replace(/</g, '\\u003c')} />
+      </div>
+
+      <div class="pdp-info">
+        <h1>{product.title}</h1>
+        {offer ? (
+          <div class="pdp-price"><span class:list={['offer-tag', { 'offer-tag--off': !offer.accepting }]}>{offer.accepting ? 'Teklife açık ürün' : 'Teklif alımı kapalı'}</span></div>
+        ) : (
+          <div class="pdp-price">
+            {product.compareAtPrice && product.compareAtPrice.amount > product.price.amount && <s class="muted">{formatMoney(product.compareAtPrice)}</s>}
+            <span class="price">{formatMoney(product.price)}</span>
+          </div>
+        )}
+        <p class:list={['stock', status === 'in_stock' ? 'stock--in' : status === 'sold' ? 'stock--sold' : 'stock--oos']}>{STATUS_LABEL[status]}</p>
+        {product.summary && <p class="muted">{product.summary}</p>}
+
+        {isDemo && product.demoScenario && (
+          <p class="notice notice--demo small">
+            <strong>Demo senaryosu:</strong> Bu ürünün “{product.demoScenario === 'offers_closed' ? 'Teklif alımı kapalı' : STATUS_LABEL[status]}” durumu, davranışı göstermek için demo verisinde işaretlenmiştir; gerçek bir satış bilgisi değildir.
+          </p>
+        )}
+
+        <div class="buy-box">
+          {offer ? (
+            offer.accepting ? (
+              <>
+                <a class="btn btn--lime btn--block" href={offerUrl(product)}>Teklif Ver</a>
+                <p class="small muted" style="margin:0">Bu ürün sabit fiyatla satılmaz. {OFFER_DISCLAIMER}</p>
+              </>
+            ) : (
+              <>
+                <button type="button" class="btn btn--block" disabled aria-disabled="true">{status === 'sold' ? 'Bu ürün satıldı' : 'Teklif alımı kapalı'}</button>
+                <p class="small muted" style="margin:0">{offer.message}</p>
+              </>
+            )
+          ) : status === 'in_stock' ? (
+            <>
+              <div class="buy-row">
+                <div class="qty" data-qty>
+                  <button type="button" data-qty-step="-1" aria-label="Adedi azalt">−</button>
+                  <label class="visually-hidden" for="qty">Adet</label>
+                  <input id="qty" type="number" inputmode="numeric" min="1" max={limit} value="1" />
+                  <button type="button" data-qty-step="1" aria-label="Adedi artır">+</button>
+                </div>
+                <button type="button" class="btn btn--lime" data-add-to-cart={product.variantId} data-qty-input="qty" data-msg="buy-msg">
+                  <Icon name="bag" /> Sepete ekle
+                </button>
+              </div>
+              <p class="small muted" style="margin:0">Bu üründen en fazla {limit} adet alınabilir. Fiyat ve stok, sepete eklerken ve ödemeden önce yeniden doğrulanır.</p>
+            </>
+          ) : (
+            <>
+              <button type="button" class="btn btn--block" disabled aria-disabled="true">{status === 'sold' ? 'Bu ürün satıldı' : 'Stokta yok'}</button>
+              <p class="small muted" style="margin:0">{status === 'sold' ? 'Ürün sayfası ve görselleri arşiv amacıyla erişilebilir kalır; satın alma kapalıdır.' : 'Ürün şu anda satın alınamıyor.'}</p>
+            </>
+          )}
+          <p id="buy-msg" class="form-msg" role="status" aria-live="polite"></p>
+          <button type="button" class="btn btn--outline btn--sm" data-fav-toggle={product.id} data-title={product.title} aria-pressed="false" style="justify-self:start">
+            <Icon name="heart" /> Favorilere ekle
+          </button>
+        </div>
+
+        {specs.length > 0 && (
+          <section aria-labelledby="spec-title">
+            <h2 id="spec-title" style="font-size:1.15rem">Teknik bilgiler</h2>
+            <table class="spec-table">
+              <tbody>{specs.map(([k, v]) => <tr><th scope="row">{k}</th><td>{v}</td></tr>)}</tbody>
+            </table>
+            {isDemo && <p class="source-note" style="margin-top:8px">Teknik bilgiler örnek envanter kaydındaki ürün adından ve kategorisinden okunmuştur; okunamayan alanlar gösterilmez.</p>}
+          </section>
+        )}
+
+        {(catLinks.length > 0 || collLinks.length > 0) && (
+          <section class="info-panel" aria-labelledby="cat-links-title">
+            <h2 id="cat-links-title">Kategoriler ve seçkiler</h2>
+            <ul class="chip-links">
+              {catLinks.map((c: any) => <li><a href={categoryUrl(c.path)}>{c.title}</a></li>)}
+              {collLinks.map((c: any) => <li><a href={collectionUrl(c.handle)}>{c.title}</a></li>)}
+            </ul>
+          </section>
+        )}
+
+        <section class="info-panel" aria-labelledby="delivery-title">
+          <h2 id="delivery-title">Teslimat ve iade</h2>
+          {product.deliveryNote && <p>{product.deliveryNote}</p>}
+          <table class="spec-table">
+            <tbody>
+              {deliveryRows.map(([k, v]) => <tr><th scope="row">{k}</th><td>{filled(v) ? v : <span class="placeholder">{PLACEHOLDER}</span>}</td></tr>)}
+            </tbody>
+          </table>
+          <p class="small" style="margin:10px 0 0"><a href={u('/bilgi/kargo-ve-teslimat')}>Kargo ve teslimat</a> · <a href={u('/bilgi/iade-ve-cayma')}>İade ve cayma hakkı</a></p>
+        </section>
+      </div>
+    </div>
+
+    {related.length > 0 && (
+      <section class="section" aria-labelledby="rel-title" style="padding-top:20px">
+        <div class="section-head"><h2 id="rel-title">İlgili ürünler</h2></div>
+        <div class="product-grid">{related.map((p: any) => <ProductCard product={p} />)}</div>
+      </section>
+    )}
+  </div>
+
+  <dialog class="lightbox" id="lightbox" aria-label="Görsel büyütme">
+    <figure>
+      <div class="stage" data-stage><img data-lb-img src="" alt="" /></div>
+      <figcaption data-lb-caption></figcaption>
+    </figure>
+    <button type="button" class="lb-zoom" data-lb-zoom aria-label="Yakınlaştır / uzaklaştır" aria-pressed="false"><Icon name="zoom" /></button>
+    <button type="button" class="lb-close" data-lb-close aria-label="Kapat"><Icon name="close" /></button>
+    {product.images.length > 1 && <button type="button" class="lb-prev" data-lb-prev aria-label="Önceki görsel"><Icon name="chevron-left" /></button>}
+    {product.images.length > 1 && <button type="button" class="lb-next" data-lb-next aria-label="Sonraki görsel"><Icon name="chevron-right" /></button>}
+  </dialog>
+  <script>
+    import '../../scripts/gallery.js';
+  </script>
+  </>
+</BaseLayout>

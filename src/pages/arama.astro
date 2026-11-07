@@ -1,0 +1,34 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import CatalogView from '../components/CatalogView.astro';
+import Icon from '../components/Icon.astro';
+import { loadCatalog, search } from '../lib/catalog.js';
+import { parseState } from '../lib/search/engine.js';
+import { site } from '../config/site.js';
+import { u } from '../lib/paths.js';
+
+const state = parseState(new URLSearchParams());
+const result = search(await loadCatalog(), state, { pageSize: site.pageSize });
+const crumbs = [{ title: 'Ana sayfa', href: u('/') }, { title: 'Arama', href: u('/arama') }];
+---
+<BaseLayout title="Arama" description="İlkim Koleksiyon kataloğunda arama." canonical={u('/arama')}>
+  <div class="container page-head">
+    <Breadcrumbs items={crumbs} />
+    <h1 data-search-heading>Katalogda ara</h1>
+    <form action={u('/arama')} method="get" role="search" style="max-width:640px;margin:10px 0 6px">
+      <label class="search-field" style="color:var(--ink);background:var(--paper)">
+        <Icon name="search" />
+        <span class="visually-hidden">Arama ifadesi</span>
+        <input type="search" name="q" data-search-input placeholder="Ülke, yıl, nominal değer, emisyon, katalog no, metal…" autocomplete="off" />
+        <button type="submit">Ara</button>
+      </label>
+    </form>
+    <p class="small muted">Arama; ürün adı, ülke, yıl, nominal değer, emisyon, hükümdar, kondisyon, katalog numarası, sertifika ve metal alanlarında yapılır. Türkçe karakter ve büyük/küçük harf farkı gözetilmez (ör. “gumus” = “Gümüş”, “1.000” = “1000”).</p>
+  </div>
+  <div class="container">
+    <CatalogView basePath={u('/arama')} state={state} result={result} scope={{ search: true }}
+      emptyTitle="Aramak istediğiniz ifadeyi yazın"
+      emptyText="Yazımı kontrol edin, daha genel bir ifade deneyin veya filtreleri kaldırın. Örnek: “almanya mark”, “5 emisyon”, “P-173a”." />
+  </div>
+</BaseLayout>

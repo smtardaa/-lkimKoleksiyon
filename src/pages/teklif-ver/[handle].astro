@@ -1,0 +1,126 @@
+---
+/**
+ * Ürüne bağlı teklif formu. Ürün kimliği sayfaya gömülüdür; kullanıcı ürün adı yazmaz.
+ * Sayfa yalnızca teklif ürünleri için üretilir; sabit fiyatlı ürünün adresi 404 verir.
+ * Satılmış/kapalı teklif ürününde form gösterilmez.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import { loadCatalog, productUrl } from '../../lib/catalog.js';
+import { isOfferOnly, offerStatus, offerUrl, OFFER_DISCLAIMER } from '../../lib/offers/status.js';
+import { OFFER_LIMITS } from '../../lib/offers/validate.js';
+import { isDemo } from '../../config/site.js';
+import { u } from '../../lib/paths.js';
+
+export async function getStaticPaths() {
+  const { products } = await loadCatalog();
+  return products.filter(isOfferOnly).map((product) => ({ params: { handle: product.handle }, props: { product } }));
+}
+
+const { product } = Astro.props;
+const state = offerStatus(product);
+const canSubmit = state.accepting;
+const img = product.images?.[0];
+const crumbs = [
+  { title: 'Ana sayfa', href: u('/') },
+  { title: 'Teklif Ver', href: u('/teklif-ver') },
+  { title: product.title, href: offerUrl(product) },
+];
+---
+<BaseLayout
+  title={`Teklif ver: ${product.title}`}
+  description={`${product.title} için teklif formu.`}
+  canonical={productUrl(product)}
+  noindex
+>
+    <>
+      <div class="container page-head">
+        <Breadcrumbs items={crumbs} />
+        <h1>Teklif ver</h1>
+      </div>
+      <div class="container offer-layout">
+        <aside class="offer-product" aria-label="Teklif verilen ürün">
+          <a class="media" href={productUrl(product)} tabindex="-1" aria-hidden="true">
+            {img && <img src={img.srcSmall ?? img.src} width={img.width} height={img.height} alt="" />}
+          </a>
+          <div class="body">
+            <p class="title"><a href={productUrl(product)}>{product.title}</a></p>
+            {product.specs.country && <p class="small muted" style="margin:0">{product.specs.country}{product.specs.yearText && ` · ${product.specs.yearText}`}</p>}
+          </div>
+        </aside>
+
+        <div>
+          {!state.accepting ? (
+            <div class="notice" role="status">
+              <p><strong>{state.message}</strong></p>
+              <p style="margin:0"><a href={productUrl(product)}>Ürün sayfasına dön</a> · <a href={u('/teklif-ver')}>Teklif alınan diğer ürünler</a></p>
+            </div>
+          ) : (
+            <>
+              <div class="offer-result" data-offer-result tabindex="-1" hidden>
+                <h2 data-offer-result-title></h2>
+                <p data-offer-result-text></p>
+                <p class="small muted" style="margin:0">{OFFER_DISCLAIMER}</p>
+                <div class="actions">
+                  <a class="btn btn--outline btn--sm" href={productUrl(product)}>Ürün sayfası</a>
+                  <a class="btn btn--outline btn--sm" href={u('/teklif-ver')}>Diğer ürünler</a>
+                </div>
+              </div>
+
+              <form class="offer-form" data-offer-form novalidate>
+                {isDemo && <p class="notice notice--demo" style="margin:0"><strong>Demo:</strong> Form çalışır ancak teklif işletmeye gönderilmez ve kaydedilmez.</p>}
+                <noscript><p class="notice" style="margin:0">Teklif göndermek için tarayıcınızda JavaScript açık olmalıdır.</p></noscript>
+
+                <div class="error-summary" data-offer-summary role="alert" tabindex="-1" hidden></div>
+
+                <input type="hidden" name="productId" value={product.variantId} />
+                <fieldset disabled={!canSubmit}>
+                  <legend class="visually-hidden">Teklif bilgileri</legend>
+                  <div class="field-row">
+                    <label for="of-name">Ad soyad <span class="req" aria-hidden="true">*</span></label>
+                    <input class="field" id="of-name" name="name" type="text" autocomplete="name" maxlength={OFFER_LIMITS.nameMax} required aria-describedby="of-name-err" />
+                    <p class="field-error" id="of-name-err"></p>
+                  </div>
+                  <div class="field-row">
+                    <label for="of-email">E-posta <span class="req" aria-hidden="true">*</span></label>
+                    <input class="field" id="of-email" name="email" type="email" inputmode="email" autocomplete="email" maxlength={OFFER_LIMITS.emailMax} required aria-describedby="of-email-err" />
+                    <p class="field-error" id="of-email-err"></p>
+                  </div>
+                  <div class="field-row">
+                    <label for="of-phone">Telefon <span class="opt">(isteğe bağlı)</span></label>
+                    <input class="field" id="of-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="24" aria-describedby="of-phone-err" />
+                    <p class="field-error" id="of-phone-err"></p>
+                  </div>
+                  <div class="field-row">
+                    <label for="of-amount">Teklif tutarı — TL <span class="req" aria-hidden="true">*</span></label>
+                    <div class="amount-field">
+                      <input class="field" id="of-amount" name="amount" type="text" inputmode="decimal" autocomplete="off" maxlength="20" required aria-describedby="of-amount-hint of-amount-err" />
+                      <span class="unit" aria-hidden="true">TL</span>
+                    </div>
+                    <p class="field-hint" id="of-amount-hint">Örnek: 12.500 veya 12500,50</p>
+                    <p class="field-error" id="of-amount-err"></p>
+                  </div>
+                  <div class="field-row">
+                    <label for="of-message">Mesaj <span class="opt">(isteğe bağlı)</span></label>
+                    <textarea class="field" id="of-message" name="message" maxlength={OFFER_LIMITS.messageMax} aria-describedby="of-message-err"></textarea>
+                    <p class="field-error" id="of-message-err"></p>
+                  </div>
+                  <div class="hp-field" aria-hidden="true">
+                    <label for="of-website">Bu alanı boş bırakın</label>
+                    <input id="of-website" name="website" type="text" tabindex="-1" autocomplete="off" />
+                  </div>
+                  <p class="notice" style="margin:0"><strong>{OFFER_DISCLAIMER}</strong></p>
+                  <p class="small muted" style="margin:0">Bilgilerinizin işlenmesi için <a href={u('/bilgi/gizlilik-ve-kvkk')}>Gizlilik ve KVKK</a> metnine bakın.</p>
+                  <button class="btn btn--lime btn--block" type="submit" data-offer-submit>Teklifi gönder</button>
+                  <p class="form-msg" data-offer-status role="status" aria-live="polite"></p>
+                </fieldset>
+              </form>
+              <script>
+                import '../../scripts/offer-form.js';
+              </script>
+            </>
+          )}
+        </div>
+      </div>
+    </>
+</BaseLayout>

@@ -1,0 +1,111 @@
+---
+import { u } from '../../lib/paths.js';
+/**
+ * Ticari bilgi sayfaları — düzenlenebilir iskelet.
+ * Koşullar UYDURULMAZ; değerler src/config/business.js'ten gelir, boşsa “Doldurulacak” gösterilir.
+ * Yasal metinler (mesafeli satış, ön bilgilendirme, KVKK) hukuki danışmanla tamamlanmalıdır.
+ * Tamamlanana kadar bu sayfalar noindex'tir (InfoPage skeleton).
+ */
+import InfoPage from '../../components/InfoPage.astro';
+import { business, filled, PLACEHOLDER } from '../../config/business.js';
+
+export function getStaticPaths() {
+  return [
+    { params: { slug: 'kargo-ve-teslimat' }, props: { title: 'Kargo ve teslimat', description: 'Kargo firması, kargo bedeli, kargoya teslim süresi ve paketleme bilgileri.' } },
+    { params: { slug: 'iade-ve-cayma' }, props: { title: 'İade ve cayma hakkı', description: 'Cayma hakkı, iade koşulları ve iade süreci.' } },
+    { params: { slug: 'odeme-secenekleri' }, props: { title: 'Ödeme seçenekleri', description: 'Kabul edilen ödeme yöntemleri ve güvenli ödeme sayfası.' } },
+    { params: { slug: 'mesafeli-satis-sozlesmesi' }, props: { title: 'Mesafeli satış sözleşmesi', description: 'Mesafeli satış sözleşmesi metni.' } },
+    { params: { slug: 'on-bilgilendirme-formu' }, props: { title: 'Ön bilgilendirme formu', description: 'Ön bilgilendirme formu metni.' } },
+    { params: { slug: 'gizlilik-ve-kvkk' }, props: { title: 'Gizlilik ve KVKK aydınlatma metni', description: 'Kişisel verilerin işlenmesi ve gizlilik politikası.' } },
+    { params: { slug: 'cerez-politikasi' }, props: { title: 'Çerez politikası', description: 'Sitede kullanılan çerezler ve yerel depolama.' } },
+  ];
+}
+const { slug } = Astro.params;
+const { title, description } = Astro.props;
+const b = business;
+const cm = b.commerce;
+const L = b.legal;
+const show = (x: any) => (filled(x) ? x : null);
+const isComplete = false; // Metinler tamamlandığında true yapılarak sayfa indekslemeye açılabilir.
+---
+<InfoPage title={title} path={u(`/bilgi/${slug}`)} description={description} skeleton={!isComplete}>
+  {slug === 'kargo-ve-teslimat' && (
+    <>
+      <h2>Kargo bilgileri</h2>
+      <dl>
+        <dt>Kargo firması</dt><dd>{show(cm.carriers) ?? <span class="placeholder">{PLACEHOLDER}</span>}</dd>
+        <dt>Kargo bedeli</dt><dd>{show(cm.shippingFee) ?? <span class="placeholder">{PLACEHOLDER}</span>}</dd>
+        <dt>Kargoya teslim süresi</dt><dd>{show(cm.dispatchTime) ?? <span class="placeholder">{PLACEHOLDER}</span>}</dd>
+        <dt>Teslimat bölgesi</dt><dd>{show(cm.shippingRegions) ?? <span class="placeholder">{PLACEHOLDER}</span>}</dd>
+        <dt>Paketleme</dt><dd>{show(cm.packaging) ?? <span class="placeholder">{PLACEHOLDER}</span>}</dd>
+      </dl>
+      <h2>Teslimat sırasında</h2>
+      <p><span class="placeholder">{PLACEHOLDER}</span> — Hasarlı paket, tutanak ve bildirim süreci işletme tarafından yazılmalıdır.</p>
+      <p class="small muted">Canlı mağazada kargo ücretleri Shopify yönetim panelindeki “Kargo ve teslimat” ayarlarından hesaplanır; bu sayfadaki metin o ayarlarla tutarlı tutulmalıdır.</p>
+    </>
+  )}
+  {slug === 'iade-ve-cayma' && (
+    <>
+      <h2>Cayma hakkı</h2>
+      <p>{show(cm.returnPolicySummary) ?? <span class="placeholder">{PLACEHOLDER}</span>}</p>
+      <h2>İade süreci</h2>
+      <ol>
+        <li>İade talebinin iletileceği kanal: <span class="placeholder">{PLACEHOLDER}</span></li>
+        <li>İade gönderim adresi ve kargo bedeli: <span class="placeholder">{PLACEHOLDER}</span></li>
+        <li>Ücret iadesinin yapılacağı süre ve yöntem: <span class="placeholder">{PLACEHOLDER}</span></li>
+      </ol>
+      <h2>İade kabul edilmeyen durumlar</h2>
+      <p><span class="placeholder">{PLACEHOLDER}</span></p>
+    </>
+  )}
+  {slug === 'odeme-secenekleri' && (
+    <>
+      <h2>Ödeme yöntemleri</h2>
+      <p>{show(cm.paymentMethods) ?? <span class="placeholder">{PLACEHOLDER}</span>}</p>
+      <h2>Güvenli ödeme</h2>
+      <p>Ödeme, Shopify'ın güvenli ödeme sayfasında (Shopify Checkout) tamamlanır; kart bilgileri bu sitede işlenmez veya saklanmaz. Ödeme sağlayıcısı (ör. PayTR) Shopify yönetim panelinde etkinleştirildikten sonra bu bölüm güncellenmelidir.</p>
+      <h2>Fatura</h2>
+      <p>{show(cm.invoiceInfo) ?? <span class="placeholder">{PLACEHOLDER}</span>}</p>
+    </>
+  )}
+  {(slug === 'mesafeli-satis-sozlesmesi' || slug === 'on-bilgilendirme-formu') && (
+    <>
+      <h2>Satıcı bilgileri</h2>
+      <dl>
+        <dt>Ticari unvan</dt><dd>{show(L.companyTitle) ?? <span class="placeholder">{PLACEHOLDER}</span>}</dd>
+        <dt>Adres</dt><dd>{show(b.contact.address) ?? <span class="placeholder">{PLACEHOLDER}</span>}</dd>
+        <dt>Telefon</dt><dd>{show(b.contact.phone) ?? <span class="placeholder">{PLACEHOLDER}</span>}</dd>
+        <dt>E-posta</dt><dd>{show(b.contact.email) ?? <span class="placeholder">{PLACEHOLDER}</span>}</dd>
+        <dt>Vergi dairesi / no</dt><dd>{show(L.taxOffice) && show(L.taxNumber) ? `${L.taxOffice} / ${L.taxNumber}` : <span class="placeholder">{PLACEHOLDER}</span>}</dd>
+        <dt>MERSİS no</dt><dd>{show(L.mersisNumber) ?? <span class="placeholder">{PLACEHOLDER}</span>}</dd>
+        <dt>KEP adresi</dt><dd>{show(L.kepAddress) ?? <span class="placeholder">{PLACEHOLDER}</span>}</dd>
+      </dl>
+      <h2>Sözleşme metni</h2>
+      <p><span class="placeholder">{PLACEHOLDER}</span> — Bu metin, 6502 sayılı Kanun ve Mesafeli Sözleşmeler Yönetmeliği'ne uygun biçimde hukuki danışmanla hazırlanmalıdır. Shopify Checkout'ta sipariş öncesi onay kutusu ve sözleşme bağlantıları Shopify ayarlarından yapılandırılır.</p>
+    </>
+  )}
+  {slug === 'gizlilik-ve-kvkk' && (
+    <>
+      <h2>Veri sorumlusu</h2>
+      <p>{show(L.companyTitle) ?? <span class="placeholder">{PLACEHOLDER}</span>}</p>
+      <h2>İşlenen veriler ve amaçlar</h2>
+      <p><span class="placeholder">{PLACEHOLDER}</span> — Sipariş ve ödeme verileri Shopify üzerinde işlenir. Sepet ve favoriler yalnızca ziyaretçinin tarayıcısında (yerel depolama) tutulur.</p>
+      <h3>Teklif formu</h3>
+      <p>Teklif formuyla iletilen ad soyad, e-posta, telefon, tutar ve mesaj bilgileri teklifin işletmeye ulaştırılması için işlenir. Saklama süresi, kullanılan bildirim hizmetleri ve aktarım bilgileri: <span class="placeholder">{PLACEHOLDER}</span></p>
+      <h2>Haklarınız ve başvuru</h2>
+      <p><span class="placeholder">{PLACEHOLDER}</span></p>
+    </>
+  )}
+  {slug === 'cerez-politikasi' && (
+    <>
+      <h2>Kullanılan yerel depolama</h2>
+      <ul>
+        <li><code>ilkim.cart.v1</code> — sepetteki ürünler ve adetleri (zorunlu işlev).</li>
+        <li><code>ilkim.favorites.v1</code> — favorilere eklenen ürünler (tercih).</li>
+      </ul>
+      <p>Bu demo sürümünde analitik veya reklam çerezi kullanılmamaktadır. Ödeme sayfası (Shopify Checkout) kendi çerezlerini kullanır.</p>
+      <h2>Ek çerezler</h2>
+      <p><span class="placeholder">{PLACEHOLDER}</span> — Analitik/pazarlama araçları eklenirse bu bölüm ve gerekli açık rıza mekanizması güncellenmelidir.</p>
+    </>
+  )}
+</InfoPage>

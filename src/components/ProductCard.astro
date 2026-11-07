@@ -1,0 +1,12 @@
+---
+import { renderCard } from '../lib/render/product-card.js';
+
+interface Props {
+  product: any;
+  eager?: boolean;
+  headingLevel?: 'h2' | 'h3';
+  categoryLabel?: string | null;
+}
+const { product, ...options } = Astro.props;
+---
+<Fragment set:html={renderCard(product, options)} />

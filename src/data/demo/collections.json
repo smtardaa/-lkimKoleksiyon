@@ -1,0 +1,30 @@
+[
+ {
+  "handle": "sertifikali-paralar",
+  "title": "Sertifikalı Paralar",
+  "description": "Bağımsız derecelendirme kuruluşu (ör. PMG) notu taşıyan veya kaynak adında “sertifikalı” ifadesi bulunan parçalar. Ürünler kendi kategorilerinde de yer alır; seçkide çoğaltılmaz.",
+  "rule": "Kaynakta “Sertifikalı Paralar” listesinde olanlar + başlığında PMG/NGC/PCGS notu veya “sertifikalı” ifadesi geçenler",
+  "productCount": 9
+ },
+ {
+  "handle": "gumus-paralar",
+  "title": "Gümüş Paralar",
+  "description": "Başlığında gümüş olduğu belirtilen T.C. ve Osmanlı paraları.",
+  "rule": "Başlıkta “gümüş” geçenler",
+  "productCount": 14
+ },
+ {
+  "handle": "para-setleri",
+  "title": "Para Setleri",
+  "description": "Tedavül ve hatıra para setleri, orijinal kitler.",
+  "rule": "Başlıkta “set”/“kitinde” geçenler",
+  "productCount": 4
+ },
+ {
+  "handle": "polimer-banknotlar",
+  "title": "Polimer Banknotlar",
+  "description": "Polimer (plastik esaslı) baskı banknotlar.",
+  "rule": "Başlıkta “polimer” geçenler",
+  "productCount": 6
+ }
+]

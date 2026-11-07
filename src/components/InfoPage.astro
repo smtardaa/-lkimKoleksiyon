@@ -1,0 +1,28 @@
+---
+import { u } from '../lib/paths.js';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Breadcrumbs from './Breadcrumbs.astro';
+import { breadcrumbLd } from '../lib/seo.js';
+interface Props { title: string; description: string; path: string; lead?: string; skeleton?: boolean }
+const { title, description, path, lead, skeleton = false } = Astro.props;
+const crumbs = [{ title: 'Ana sayfa', href: u('/') }, { title, href: path }];
+---
+<BaseLayout title={title} description={description} canonical={path} jsonLd={breadcrumbLd(crumbs)} noindex={skeleton}>
+  <div class="container page-head">
+    <Breadcrumbs items={crumbs} />
+    <h1>{title}</h1>
+    {lead && <p class="lead">{lead}</p>}
+  </div>
+  <div class="container">
+    <article class="prose">
+      {skeleton && (
+        <p class="notice">
+          <strong>Düzenlenebilir iskelet:</strong> Bu sayfanın koşulları henüz İlkim Koleksiyon tarafından sağlanmadı.
+          <span class="placeholder">Doldurulacak</span> ile işaretli alanlar <code>src/config/business.js</code> dosyasından veya bu sayfanın metninden tamamlanmalı;
+          yasal metinler hukuki danışmanla birlikte hazırlanmalıdır. Tamamlanana kadar sayfa arama motorlarına kapalıdır.
+        </p>
+      )}
+      <slot />
+    </article>
+  </div>
+</BaseLayout>

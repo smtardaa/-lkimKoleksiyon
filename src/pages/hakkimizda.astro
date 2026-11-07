@@ -1,0 +1,26 @@
+---
+import { u } from '../lib/paths.js';
+import InfoPage from '../components/InfoPage.astro';
+import { business, filled, PLACEHOLDER } from '../config/business.js';
+const a = business.about;
+const v = (x: any) => (filled(x) ? x : null);
+---
+<InfoPage title="Hakkımızda" path={u('/hakkimizda')} description="İlkim Koleksiyon; kâğıt paralar, madeni paralar ve koleksiyon parçalarına odaklanan bir numizmatik mağazadır." lead="İlkim Koleksiyon; Türkiye Cumhuriyeti ve Osmanlı paralarından dünya banknotlarına uzanan koleksiyon parçalarını, ayrıntılı ürün bilgileriyle sabit fiyattan sunmayı amaçlar.">
+  <h2>Koleksiyon odağımız</h2>
+  <p>Katalogda kâğıt paralar (banknotlar) ve madeni paralar ana odaktır: T.C. emisyonları, Cumhuriyet dönemi tedavül ve hatıra paraları, Osmanlı paraları, yabancı paralar ve sertifikalı parçalar. Pul, koleksiyon malzemeleri, madalya ve diğer koleksiyon ürünleri ayrı kategorilerde yer alır.</p>
+  <p>Her ürün sayfasında, ilanın kendisine ait görseller ve doğrulanabilen teknik bilgiler (ülke, yıl, nominal değer, emisyon, katalog numarası, kondisyon) yer alır. Bilinmeyen bilgiler tahminle doldurulmaz.</p>
+
+  <h2>İşletme bilgileri</h2>
+  <dl>
+    <dt>Kuruluş</dt><dd>{v(a.foundedYear) ?? <span class="placeholder">{PLACEHOLDER}</span>}</dd>
+    <dt>Kurucu / ekip</dt><dd>{v(a.founderNames) ?? <span class="placeholder">{PLACEHOLDER}</span>}</dd>
+    <dt>Hikâyemiz</dt><dd>{v(a.storeStory) ?? <span class="placeholder">{PLACEHOLDER}</span>}</dd>
+    <dt>Uzmanlık alanı</dt><dd>{v(a.expertise) ?? <span class="placeholder">{PLACEHOLDER}</span>}</dd>
+    <dt>Ticari unvan</dt><dd>{v(business.legal.companyTitle) ?? <span class="placeholder">{PLACEHOLDER}</span>}</dd>
+  </dl>
+  <p class="small muted">Bu alanlar <code>src/config/business.js</code> dosyasından doldurulur.</p>
+
+  <h2>Nasıl satış yapıyoruz?</h2>
+  <p>Ürünler sabit fiyatla satılır; seçili parçalar için ayrıca <a href={u('/teklif-ver')}>teklif</a> gönderilebilir. Açık artırma yapılmaz. Sepet ve ödeme işlemleri güvenli ödeme sayfası üzerinden tamamlanır. Kargo, iade ve ödeme koşulları ilgili sayfalarda yer alır.</p>
+  <p><a href={u('/koleksiyon-rehberi')}>Koleksiyon rehberi</a> · <a href={u('/sss')}>Sıkça sorulan sorular</a> · <a href={u('/iletisim')}>İletişim</a></p>
+</InfoPage>

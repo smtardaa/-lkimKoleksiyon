@@ -1,0 +1,66 @@
+---
+import { u } from '../lib/paths.js';
+import { footerNav, topCategories } from '../config/navigation.js';
+import { business, whatsappUrl, phoneUrl, emailUrl, socialLinks } from '../config/business.js';
+import { site, isDemo } from '../config/site.js';
+import Icon from './Icon.astro';
+const wa = whatsappUrl();
+const tel = phoneUrl();
+const mail = emailUrl();
+const socials = socialLinks();
+const year = new Date().getFullYear();
+---
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a class="brand" href={u('/')} aria-label="İlkim Koleksiyon — ana sayfa">
+          <img src={u('/brand/amblem-96.png')} width="46" height="46" alt="" loading="lazy" />
+          <span class="brand-text" aria-hidden="true"><span>İlkim</span><span>Koleksiyon</span></span>
+        </a>
+        <span class="sep" aria-hidden="true"></span>
+        <ul class="footer-links">
+          <li><a href={u('/hakkimizda')}>Hakkımızda</a></li>
+          <li><a href={u('/iletisim')}>İletişim</a></li>
+          <li><a href={u('/koleksiyon-rehberi')}>Koleksiyon rehberi</a></li>
+          {wa && <li><a href={wa} rel="noopener" target="_blank"><Icon name="whatsapp" /> WhatsApp</a></li>}
+        </ul>
+      </div>
+      {isDemo && <p class="small muted" style="margin:0">{site.demoNotice}</p>}
+    </div>
+
+    <div class="footer-cols">
+      <section aria-labelledby="f-kat">
+        <h2 id="f-kat">Kategoriler</h2>
+        <ul>{topCategories.slice(0, 6).map((c) => <li><a href={u(`/kategori/${c.path}`)}>{c.title}</a></li>)}</ul>
+      </section>
+      <section aria-labelledby="f-mag">
+        <h2 id="f-mag">Mağaza</h2>
+        <ul>{footerNav.magaza.map((l) => <li><a href={l.href}>{l.label}</a></li>)}</ul>
+      </section>
+      <section aria-labelledby="f-bil">
+        <h2 id="f-bil">Bilgi</h2>
+        <ul>{footerNav.bilgi.map((l) => <li><a href={l.href}>{l.label}</a></li>)}</ul>
+      </section>
+      <section aria-labelledby="f-yas">
+        <h2 id="f-yas">Alışveriş koşulları</h2>
+        <ul>{footerNav.yasal.map((l) => <li><a href={l.href}>{l.label}</a></li>)}</ul>
+      </section>
+      {(tel || mail || socials.length > 0) && (
+        <section aria-labelledby="f-ilt">
+          <h2 id="f-ilt">İletişim</h2>
+          <ul>
+            {tel && <li><a href={tel}>{business.contact.phone}</a></li>}
+            {mail && <li><a href={mail}>{business.contact.email}</a></li>}
+            {socials.map((s) => <li><a href={s.url} rel="noopener" target="_blank">{s.label}</a></li>)}
+          </ul>
+        </section>
+      )}
+    </div>
+
+    <div class="footer-note">
+      <span>© {year} {business.brandName}</span>
+      {isDemo && <span>Demo envanter örnek amaçlıdır; ürün görselleri ve fiyatları kaynağından alınmıştır.</span>}
+    </div>
+  </div>
+</footer>
