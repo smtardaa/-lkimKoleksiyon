@@ -345,6 +345,52 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 2rem 0; }
 .status-badge--cert { left: auto; right: 58px; background: var(--emerald-900); color: var(--gold); }
 .p-card.is-sold .media img { filter: grayscale(.35); opacity: .85; }
 
+/* ---------- Ana sayfa ürün slider'ları ---------- */
+.slider-section { padding-block: clamp(22px, 3vw, 36px); }
+.slider-section + .slider-section { border-top: 1px solid var(--line); }
+.slider-head { display: flex; align-items: end; justify-content: space-between; gap: 12px 20px; margin-bottom: 14px; flex-wrap: wrap; }
+.slider-head h2 { margin: 0; color: var(--emerald-900); font-size: clamp(1.35rem, 1.1rem + 1vw, 1.9rem); }
+.slider-head .sub { margin: 4px 0 0; color: var(--muted); font-size: .92rem; }
+.slider-tools { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+.slider-all { display: inline-flex; align-items: center; gap: 6px; padding: 10px 2px; font-weight: 700; color: var(--emerald-800); text-decoration: none; white-space: nowrap; }
+.slider-all:hover { text-decoration: underline; text-decoration-color: var(--copper); }
+.slider-nav { display: flex; gap: 8px; }
+.slider-nav[hidden] { display: none; }
+.slider-btn { width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid var(--line-strong); background: var(--paper); color: var(--emerald-900); display: grid; place-items: center; transition: border-color .18s, background-color .18s; }
+.slider-btn:hover:not(:disabled) { border-color: var(--copper); background: var(--warm-2); }
+.slider-btn:disabled { opacity: .35; cursor: not-allowed; }
+.slider-btn svg { width: 22px; height: 22px; }
+/* --per: aynı anda görünen kart sayısı (kesirli değer sonraki kartın bir kısmını gösterir) */
+.slider-track {
+  --per: 4; --gap: 18px;
+  list-style: none; margin: 0; padding: 4px 2px 12px; scroll-padding-inline: 2px; display: flex; gap: var(--gap);
+  overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity; scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent;
+}
+.slider-track > li { flex: 0 0 calc((100% - (var(--per) - 1) * var(--gap)) / var(--per)); min-width: 0; display: flex; scroll-snap-align: start; }
+.slider-track > li > .p-card { width: 100%; }
+.slider-track .p-card .title { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; }
+.slider-track.is-dragging { scroll-snap-type: none; cursor: grabbing; user-select: none; }
+.slider-track:focus-visible { outline-offset: 4px; }
+.slider-minor { background: var(--warm-2); padding-top: 22px; }
+.slider-minor > .container > .eyebrow { color: var(--copper-700); margin: 0; }
+.slider-section--minor { padding-block: 18px 22px; }
+.slider-section--minor .slider-head h2 { font-size: 1.2rem; }
+.slider-section--minor .slider-track { --per: 5; --gap: 14px; }
+.slider-section--minor .p-card .title { font-size: .9rem; }
+@media (max-width: 1080px) {
+  .slider-track { --per: 3; }
+  .slider-section--minor .slider-track { --per: 4; }
+}
+@media (max-width: 760px) {
+  .slider-track { --per: 2.2; --gap: 14px; }
+  .slider-section--minor .slider-track { --per: 3.2; }
+}
+@media (max-width: 560px) {
+  .slider-track { --per: 1.35; --gap: 12px; }
+  .slider-section--minor .slider-track { --per: 2.2; }
+  .slider-btn { width: 40px; height: 40px; }
+}
+
 /* ---------- Zümrüt bant ---------- */
 .band { background: var(--emerald-900); color: #fff; }
 .band-inner { display: grid; grid-template-columns: .9fr 1.6fr; gap: 28px; align-items: center; padding-block: clamp(32px, 4vw, 44px); }

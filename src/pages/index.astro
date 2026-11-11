@@ -1,18 +1,32 @@
 ---
 import { u } from '../lib/paths.js';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import ProductCard from '../components/ProductCard.astro';
+import ProductSlider from '../components/ProductSlider.astro';
 import Icon from '../components/Icon.astro';
-import { loadCatalog, listable, newestProducts, childCategories, categoryUrl, productUrl } from '../lib/catalog.js';
+import { loadCatalog, listable, childCategories, categoryUrl, collectionUrl, productUrl, offerProducts } from '../lib/catalog.js';
+import { getHomeSections } from '../lib/providers/demo.js';
+import { sectionRequests, buildHomeSections } from '../lib/home-sections.js';
 import { bannerNotes, roundCoins, withImages } from '../lib/showcase.js';
 import { organizationLd, websiteLd } from '../lib/seo.js';
 import { homeCards } from '../config/navigation.js';
-import { site } from '../config/site.js';
+import { homeSliders } from '../config/home.js';
+import { site, soldVisibility } from '../config/site.js';
 import { formatNumber } from '../lib/format.js';
 
 const catalog: any = await loadCatalog();
 
-let hero: any = {}, cards: any = {}, tabs: any[] = [], topCats: any[] = [], band: any[] = [], antika: any = null, counts: any = {};
+// Slider bölümleri: sıra, görünürlük ve ürün sınırı src/config/home.js içinden yönetilir.
+const sliders = buildHomeSections({
+  config: homeSliders,
+  fetched: getHomeSections(sectionRequests(homeSliders)),
+  offers: offerProducts(catalog),
+  urls: { categoryUrl, collectionUrl, offersUrl: u('/teklif-ver') },
+  soldVisibility,
+});
+const mainSliders = sliders.filter((x) => x.tone !== 'minor');
+const minorSliders = sliders.filter((x) => x.tone === 'minor');
+
+let hero: any = {}, cards: any = {}, topCats: any[] = [], band: any[] = [], counts: any = {};
 if (catalog) {
   const P = catalog.products;
   const notes = bannerNotes(P, 2);
@@ -40,12 +54,6 @@ if (catalog) {
     collections: catalog.collections.filter((c: any) => c.productCount > 0).length,
   };
 
-  tabs = [
-    { id: 'tum', label: 'Tümü', items: newestProducts(catalog, 8, (p) => p.images.length > 0) },
-    { id: 'banknot', label: 'Banknot', items: newestProducts(catalog, 8, (p) => p.images.length > 0 && p.specs.kind === 'banknot') },
-    { id: 'madeni', label: 'Madeni Para', items: newestProducts(catalog, 8, (p) => p.images.length > 0 && (p.specs.kind === 'madeni' || p.specs.kind === 'set')) },
-  ].filter((t) => t.items.length > 0);
-
   topCats = childCategories(catalog, null, { nonEmpty: false });
 
   const bandNotes = bannerNotes(P, 40, (p) => !used.has(p.id));
@@ -55,17 +63,12 @@ if (catalog) {
     withImages(P, (p) => p.specs.kind === 'set' && !used.has(p.id), 1)[0] ?? bandNotes[22] ?? bandNotes[1],
   ].filter(Boolean);
   band = [...new Map(bandPicks.map((p) => [p.id, p])).values()];
-
-  const antikaCat = catalog.catMap.get('antika-ve-diger');
-  const antikaItems = listable(P).filter((p) => p.categoryPaths.some((c: string) => c.startsWith('antika-ve-diger/antika')));
-  const otherItems = listable(P).filter((p) => p.categoryPaths.some((c: string) => c.startsWith('antika-ve-diger/') && !c.startsWith('antika-ve-diger/antika')));
-  antika = { cat: antikaCat, antikaItems, otherItems: otherItems.slice(0, 3), sub: childCategories(catalog, 'antika-ve-diger', { nonEmpty: false }) };
 }
 const heroPreload = hero.notes?.[0]?.images[0]?.src ?? null;
 ---
 <BaseLayout
   title={`${site.name} — Kâğıt para, madeni para ve koleksiyon parçaları`}
-  description="T.C. ve Osmanlı kâğıt paraları, madeni ve hatıra paralar, dünya banknotları, sertifikalı paralar ve koleksiyon malzemeleri. Sabit fiyatlı, detaylı ürün sayfaları."
+  description="T.C. ve Osmanlı kâğıt paraları, madeni ve hatıra paralar, dünya banknotları, sertifikalı paralar ve koleksiyon malzemeleri. Kategorilere göre öne çıkan ürünler ve detaylı ürün sayfaları."
   canonical={u('/')}
   jsonLd={[organizationLd(), websiteLd()]}
   preloadImage={heroPreload}
@@ -160,53 +163,14 @@ const heroPreload = hero.notes?.[0]?.images[0]?.src ?? null;
     </div>
   </section>
 
-  <section class="section section--alt" aria-labelledby="new-title">
-    <div class="container">
-      <div class="section-head">
-        <div>
-          <h2 id="new-title">Yeni eklenenler</h2>
-          <p class="sub">Katalogdaki en yeni ürünler · <a href={u('/yeni-gelenler')}>Tümünü gör</a></p>
-        </div>
-        <div class="tabs" role="tablist" aria-label="Yeni eklenen ürün türü">
-          {tabs.map((t, i) => (
-            <button type="button" class="tab" role="tab" id={`tab-${t.id}`} aria-controls={`panel-${t.id}`} aria-selected={i === 0 ? 'true' : 'false'} tabindex={i === 0 ? 0 : -1}>{t.label}</button>
-          ))}
-        </div>
-      </div>
-      {tabs.map((t, i) => (
-        <div role="tabpanel" id={`panel-${t.id}`} aria-labelledby={`tab-${t.id}`} hidden={i !== 0} tabindex="0">
-          <div class="product-grid">
-            {t.items.map((p: any) => <ProductCard product={p} />)}
-          </div>
-        </div>
-      ))}
-    </div>
-  </section>
+  {mainSliders.map((section) => <ProductSlider section={section} />)}
 
-  <section class="mini-section" aria-labelledby="antika-title">
-    <div class="container">
-      <div class="split-card">
-        <div>
-          <p class="eyebrow" style="color:var(--copper-700)">Diğer koleksiyon ürünleri</p>
-          <h2 id="antika-title" style="font-size:1.6rem;color:var(--emerald-900)">Antika ve diğer koleksiyon ürünleri</h2>
-          {antika.antikaItems.length === 0 ? (
-            <p class="muted">Antika bölümünde şu anda listelenen ürün yok. Bu grup, antika ve diğer koleksiyon parçaları envantere eklendiğinde burada görünecek.</p>
-          ) : (
-            <p class="muted">{antika.antikaItems.length} antika parça listeleniyor.</p>
-          )}
-          <ul class="chip-links" style="margin-top:12px">
-            {antika.sub.map((c: any) => <li><a href={categoryUrl(c.path)}>{c.title} ({c.productCount})</a></li>)}
-            <li><a href={u('/kategori/madalya-ve-objeler')}>Madalya ve Objeler ({catalog.catMap.get('madalya-ve-objeler')?.productCount ?? 0})</a></li>
-          </ul>
-        </div>
-        {antika.otherItems.length > 0 && (
-          <div class="product-grid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr))">
-            {antika.otherItems.map((p: any) => <ProductCard product={p} />)}
-          </div>
-        )}
-      </div>
+  {minorSliders.length > 0 && (
+    <div class="slider-minor">
+      <div class="container"><p class="eyebrow">Diğer koleksiyon ürünleri</p></div>
+      {minorSliders.map((section) => <ProductSlider section={section} />)}
     </div>
-  </section>
+  )}
 
   <section class="band on-dark" aria-labelledby="band-title">
     <div class="container band-inner">
@@ -223,5 +187,8 @@ const heroPreload = hero.notes?.[0]?.images[0]?.src ?? null;
       </div>
     </div>
   </section>
+  <script>
+    import '../scripts/slider.js';
+  </script>
   </>
 </BaseLayout>

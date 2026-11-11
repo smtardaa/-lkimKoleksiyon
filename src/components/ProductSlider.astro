@@ -1,0 +1,36 @@
+---
+/**
+ * Yatay ürün slider'ı. Kaydırma tarayıcının kendi yatay kaydırmasıdır (scroll-snap);
+ * JavaScript yalnızca okları, pasif durumları ve fareyle sürüklemeyi ekler (src/scripts/slider.js).
+ * Otomatik kayma ve sonsuz döngü yoktur; kartlar kopyalanmaz.
+ */
+import ProductCard from './ProductCard.astro';
+import Icon from './Icon.astro';
+
+interface Props {
+  section: { id: string; title: string; description?: string | null; href: string; tone?: string; products: any[] };
+}
+const { section } = Astro.props;
+const titleId = `sl-${section.id}-title`;
+const trackId = `sl-${section.id}-track`;
+---
+<section class:list={['slider-section', { 'slider-section--minor': section.tone === 'minor' }]} aria-labelledby={titleId} data-slider>
+  <div class="container">
+    <div class="slider-head">
+      <div>
+        <h2 id={titleId}>{section.title}</h2>
+        {section.description && <p class="sub">{section.description}</p>}
+      </div>
+      <div class="slider-tools">
+        <a class="slider-all" href={section.href} aria-label={`Tümünü gör: ${section.title}`}>Tümünü Gör <Icon name="arrow-right" /></a>
+        <div class="slider-nav" data-slider-nav hidden>
+          <button type="button" class="slider-btn" data-slider-prev aria-controls={trackId} aria-label={`Önceki ürünler: ${section.title}`} disabled><Icon name="chevron-left" /></button>
+          <button type="button" class="slider-btn" data-slider-next aria-controls={trackId} aria-label={`Sonraki ürünler: ${section.title}`}><Icon name="chevron-right" /></button>
+        </div>
+      </div>
+    </div>
+    <ul class="slider-track" id={trackId} data-slider-track tabindex="0" aria-label={`${section.title} ürünleri`}>
+      {section.products.map((p) => <li><ProductCard product={p} /></li>)}
+    </ul>
+  </div>
+</section>

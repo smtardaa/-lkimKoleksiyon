@@ -25,6 +25,9 @@ Gerçek mağaza kodu bu depoda değildir; bu sürüm ana projenin kopyasından t
 Kaldırılanlar: `@astrojs/node` adaptörü, `/api/*` uçları, middleware, Shopify sağlayıcısı, bellek önbelleği,
 teklif gönderim kanalları ve sınırlayıcılar, `astro:env` şeması, `sharp`.
 
+Ana sayfadaki kategori slider'ları ana sürümle aynıdır; bölüm sırası, görünürlüğü ve ürün sınırı `src/config/home.js` içinden yönetilir.
+Shopify sorgusu bu sürümde yoktur; bölümler demo envanterden derleme sırasında üretilir.
+
 ## Önizlemede çalışmayan işlevler
 
 Bunlar sunucu gerektirir; sahte başarı gösterilmez, sitede açıklaması bulunur.
